@@ -350,6 +350,15 @@ body{background:radial-gradient(rgba(255,255,255,.4) 1.6px,transparent 2px) 0 0/
 .tiers>div{padding:10px 4px 8px}
 .codebox{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--paper2);border:2.5px dashed var(--ink);border-radius:14px;padding:10px 12px}
 .codebox .mono{font-family:var(--display);font-size:26px;letter-spacing:3px}
+.pc.picked{outline:4px solid var(--coral);outline-offset:2px}
+.pc.picked::after{content:"✓";position:absolute;top:-8px;right:-8px;width:26px;height:26px;border-radius:50%;background:var(--coral);color:#fff;border:2.5px solid var(--ink);display:grid;place-items:center;font-family:var(--display);font-size:15px;z-index:2}
+.pc.nopick{opacity:.4}
+.selgrid .pc:hover{transform:none}
+.selgrid{padding-bottom:84px}
+.selhint{display:grid;gap:8px;background:#FFF1F1;border:2.5px dashed var(--coral);border-radius:16px;padding:10px 12px;font-size:13px}
+.selbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(80px + env(safe-area-inset-bottom,0px));z-index:7;width:min(528px,calc(100% - 24px));display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--ink);color:#fff;border-radius:18px;padding:10px 12px;box-shadow:0 6px 20px rgba(36,48,94,.35);font-size:14px}
+.selbar b{font-family:var(--display);font-weight:400;font-size:17px}
+.bulkthumbs{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;margin:10px 0}.bulkthumbs div{width:52px;height:52px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -540,7 +549,7 @@ function renderChrome(){
 }
 function go(t){tab=t;render();window.scrollTo({top:0});const v=$("#view");v.classList.remove("vin");void v.offsetWidth;v.classList.add("vin")}
 let sceneTimer=null;
-function render(){rollDay();renderChrome();clearInterval(sceneTimer);$("#view").innerHTML=VIEWS[tab]();tickLive();if(tab==="home")startScene()}
+function render(){rollDay();renderChrome();clearInterval(sceneTimer);if(tab!=="pets"&&selMode){selMode=false;sel.clear()}$("#view").innerHTML=VIEWS[tab]()+(tab==="pets"&&selMode?`<div class="selbar"><div><b class="mono">${sel.size}마리</b> 선택 · 사례금 ${itIcon("gold")}<b class="mono">${fmt(selReward())}</b></div><button class="btn red" data-bulkgo ${sel.size?"":"disabled"}>주인 찾아주기</button></div>`:"");tickLive();if(tab==="home")startScene()}
 function tickLive(){
  document.querySelectorAll("[data-until]").forEach(el=>{const u=+el.dataset.until;el.textContent=u>now()?dur(u-now()):"완료!"});
  document.querySelectorAll("[data-res]").forEach(el=>el.textContent=fmt(have(el.dataset.res)));
@@ -614,14 +623,31 @@ function collect(ev){
 }
 
 /* ================= 펫 ================= */
+let selMode=false;const sel=new Set();
+function selReward(){let g=0;sel.forEach(id=>{const p=petById(id);if(p)g+=Math.round(petInc(p,1)*120)});return g}
+function bulkAdopt(){const ps=[...sel].map(petById).filter(p=>p&&p.exp==null);if(!ps.length)return;
+ const risky=ps.filter(p=>p.stage>=4||(p.g||0)>=3||p.v!=="normal").length;
+ openModal(`${head(`${ps.length}마리 주인 찾아주기`)}
+  <div class="bulkthumbs">${ps.slice(0,15).map(p=>`<div>${sprite(p.sp,lookOf(p),p.v)}</div>`).join("")}${ps.length>15?`<span class="sub">외 ${ps.length-15}마리</span>`:""}</div>
+  <p class="sub" style="text-align:center">사례금 ${itIcon("gold")} <b class="mono">${fmt(selReward())}</b> · 가끔 감사 선물도 와요</p>
+  ${risky?`<p class="sub" style="text-align:center;color:var(--coral)">각성 이상, 유니크, 변이 펫이 ${risky}마리 섞여 있어요. 한 번 더 확인해 주세요.</p>`:""}
+  <div class="row" style="justify-content:center;margin-top:12px"><button class="btn red lg" data-ok>보내기</button><button class="btn white" data-no>취소</button></div>`,
+ m=>{m.querySelector("[data-x]").onclick=closeModal;m.querySelector("[data-no]").onclick=closeModal;m.querySelector("[data-ok]").onclick=()=>{
+  const r={gold:0,awaken:0,trans:0};
+  for(const p of ps){r.gold+=Math.round(petInc(p,1)*120);if(Math.random()<.1)r.awaken++;if(Math.random()<.01)r.trans++;
+   S.album.push({sp:p.sp,stage:p.stage,v:p.v,date:today()});S.stats.adopted++}
+  const ids=new Set(ps.map(p=>p.id));S.pets=S.pets.filter(p=>!ids.has(p.id));S.team=S.team.filter(id=>!ids.has(id));
+  if(S.album.length>60)S.album=S.album.slice(-60);give(r);sel.clear();selMode=false;markDirty();render();
+  showRewards(`${ids.size}마리가 새 가족을 만났어요`,r,"사례금과 감사 선물을 받았어요",rescue)}})}
 function petsView(){
  const list=S.pets.filter(p=>petFilter==="all"||petEl(p)===petFilter);
  const sorts={stage:(a,b)=>b.stage-a.stage||petPow(b)-petPow(a),pow:(a,b)=>petPow(b)-petPow(a),inc:(a,b)=>petInc(b)-petInc(a),new:(a,b)=>b.id-a.id};
  list.sort(sorts[petSort]);
- return `<div class="spread"><h2 class="h">내 펫 <span class="sub mono">${S.pets.length}/${MAX_PETS}</span></h2>
+ return `<div class="spread"><h2 class="h">내 펫 <span class="sub mono">${S.pets.length}/${MAX_PETS}</span></h2><button class="btn sm ${selMode?"white":"red"}" data-selmode>${selMode?"선택 끝내기":"여러 마리 보내기"}</button>
   <div class="seg">${[["stage","단계"],["pow","전투력"],["inc","수익"],["new","최신"]].map(([k,n])=>`<button aria-pressed="${petSort===k}" data-psort="${k}">${n}</button>`).join("")}</div></div>
  <div class="seg">${[["all","전체"],...Object.entries(EL)].map(([k,n])=>`<button aria-pressed="${petFilter===k}" data-pfilter="${k}">${n}</button>`).join("")}</div>
- ${list.length?`<div class="grid">${list.map(p=>petCard(p)).join("")}</div>`:`<div class="empty">${S.pets.length?"이 속성 펫이 없어요":"알을 부화시키면 여기에 펫이 생겨요"}</div>`}`;
+ ${selMode?`<div class="selhint"><span>보낼 펫을 눌러 고르세요. 원정 중인 펫은 고를 수 없어요.</span><div class="row"><button class="btn sm white" data-selq="n">노멀 전부</button><button class="btn sm white" data-selq="h">해츨링 전부</button><button class="btn sm white" data-selq="c">선택 해제</button></div></div>`:""}
+ ${list.length?`<div class="grid ${selMode?"selgrid":""}">${list.map(p=>petCard(p).replace('class="pc ',`class="pc ${sel.has(p.id)?"picked":""} ${selMode&&p.exp!=null?"nopick":""} `)).join("")}</div>`:`<div class="empty">${S.pets.length?"이 속성 펫이 없어요":"알을 부화시키면 여기에 펫이 생겨요"}</div>`}`;
 }
 
 /* ================= 모험 ================= */
@@ -1064,7 +1090,11 @@ document.addEventListener("click",e=>{
  const t=e.target.closest("button");if(!t||t.disabled)return;const d=t.dataset;
  if(d.tab){closeModal();return go(d.tab)}
  if(t.closest(".modal"))return;
+ if(d.pet&&tab==="pets"&&selMode){const p=petById(+d.pet);if(!p||p.exp!=null)return toast("원정 중인 펫은 보낼 수 없어요");sel.has(p.id)?sel.delete(p.id):sel.add(p.id);return render()}
  if(d.pet)return petModal(+d.pet);
+ if(t.hasAttribute("data-selmode")){selMode=!selMode;sel.clear();return render()}
+ if(d.selq){if(d.selq==="c")sel.clear();else S.pets.filter(p=>p.exp==null&&(petFilter==="all"||petEl(p)===petFilter)&&(d.selq==="n"?(p.g||0)===0:p.stage===0)).forEach(p=>sel.add(p.id));return render()}
+ if(t.hasAttribute("data-bulkgo"))return bulkAdopt();
  if(d.egg)return hatch(+d.egg);
  if(d.goshop){shopTab=["awaken","trans"].includes(d.goshop)?"syn":"mat";return go("shop")}
  if(t.hasAttribute("data-collect"))return collect(e);
