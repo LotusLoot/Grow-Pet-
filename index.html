@@ -348,6 +348,8 @@ body{background:radial-gradient(rgba(255,255,255,.4) 1.6px,transparent 2px) 0 0/
 .tchip b{font-family:var(--display);font-weight:400;color:var(--tc);-webkit-text-stroke:.3px var(--ink)}
 .tiers>div.off .medal{filter:grayscale(.85) opacity(.55)}
 .tiers>div{padding:10px 4px 8px}
+.codebox{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--paper2);border:2.5px dashed var(--ink);border-radius:14px;padding:10px 12px}
+.codebox .mono{font-family:var(--display);font-size:26px;letter-spacing:3px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -488,7 +490,7 @@ const totalRate=()=>S.pets.reduce((t,p)=>t+(p.work!=null&&!sulking(p)?petInc(p,W
 function bestTeam(el){return S.pets.filter(p=>p.exp==null).sort((a,b)=>unitPow(b,el)-unitPow(a,el)).slice(0,3).map(p=>p.id)}
 
 /* ================= 저장 ================= */
-let DB=null,UID=null,dbWritable=false,saving=false,dirty=false,lastRankWrite=0;
+let FS=null,pendingCode=null,DB=null,UID=null,dbWritable=false,saving=false,dirty=false,lastRankWrite=0;
 const LKEY="pet-hatchery-save-v1";
 function saveLocal(){try{localStorage.setItem(LKEY,JSON.stringify(S))}catch(e){}}
 function loadLocal(){try{const t=localStorage.getItem(LKEY);return t?JSON.parse(t):null}catch(e){return null}}
@@ -806,6 +808,11 @@ function recView(){const st=S.stats;
  <div class="card"><div class="statrow" style="grid-template-columns:repeat(auto-fit,minmax(100px,1fr));margin-top:0">
   <div>최고 단계<b>${st.bestStage>=0?STAGES[st.bestStage]:"-"}</b></div><div>전설 펫<b class="mono">${S.pets.filter(p=>p.stage===5).length}</b></div><div>도감<b class="mono">${codexCount(S)}/16</b></div>
   <div>전투 진행<b class="mono">${S.cleared>=0?`${Math.floor(S.cleared/10)+1}-${S.cleared%10+1}`:"-"}</b></div><div>누적 골드<b class="mono">${fmt(st.totalGold)}</b></div><div>입양 보낸 펫<b class="mono">${st.adopted}</b></div></div></div>
+ <div class="card"><h2 class="h">저장 코드</h2>
+  <p class="sub">폰과 컴퓨터는 기록이 따로예요. 여기서 코드를 만들고, 다른 기기의 같은 화면에 입력하면 그대로 이어 할 수 있어요. 코드는 다른 사람에게 알려주지 마세요.</p>
+  <div class="codebox" style="margin-top:10px">${S.saveCode?`<span class="mono">${fmtCode(S.saveCode)}</span><button class="btn sm white" data-copycode>복사</button>`:`<span class="sub">아직 코드가 없어요</span>`}</div>
+  <div class="row" style="margin-top:8px"><button class="btn" data-mkcode>${S.saveCode?"지금 기록으로 갱신":"코드 만들기"}</button>${S.saveCode?`<span class="sub">기록이 많이 바뀌었으면 옮기기 전에 갱신해 주세요</span>`:""}</div>
+  <div class="row" style="margin-top:12px"><input id="codeIn" maxlength="9" placeholder="다른 기기 코드 XXXX-XXXX" autocomplete="off" style="flex:1;min-width:0;font:inherit;font-family:var(--display);font-size:17px;letter-spacing:1px;padding:8px 12px;border:var(--line);border-radius:12px;text-transform:uppercase"><button class="btn blue" data-ldcode>불러오기</button></div></div>
  <div class="card"><h2 class="h">업적</h2><div class="list" style="margin-top:10px">${ONCE.map(o=>{const done=o[3](S),got=S.once[o[0]];return `<div class="li" style="box-shadow:none"><div class="grow"><div class="t" style="font-size:15px">${o[1]}</div><div class="sub">${rewardText(o[2])}</div></div>${got?'<span class="pill">완료</span>':`<button class="btn sm ${done?"red":""}" data-once="${o[0]}" ${done?"":"disabled"}>${done?"받기":"진행 중"}</button>`}</div>`}).join("")}</div></div>
  <div class="card"><div class="spread"><h2 class="h">랭킹</h2><div class="seg">${[["weekBest","주간 데미지"],["legends","전설"],["codex","도감"],["totalGold","골드"]].map(([k,n])=>`<button aria-pressed="${rankSort===k}" data-rsort="${k}">${n}</button>`).join("")}</div></div>
   <div class="tabwrap" style="margin-top:10px" id="rankBox">${rankTable()}</div></div>
@@ -938,6 +945,37 @@ function pickFuse(p){pickPet(`${SP[p.sp][0]} 융합 재료`,x=>fuseMats(p).inclu
   m=>{m.querySelector("[data-x]").onclick=()=>petModal(p.id);m.querySelector("[data-no]").onclick=()=>petModal(p.id);m.querySelector("[data-ok]").onclick=()=>{
    S.pets=S.pets.filter(y=>y.id!==x.id);S.team=S.team.filter(id=>id!==x.id);p.g=Math.min(3,(p.g||0)+1);markDirty();render();
    const mm=petModal(p.id,"reveal");const sb=mm.querySelector(".stage-bg");sb&&sb.insertAdjacentHTML("afterbegin",'<div class="rays gold"></div>');mm.insertAdjacentHTML("afterbegin",`<p class="bigtitle">${GRADES[p.g].name} 등급!</p>`)}})},x=>`${STAGES[x.stage]} · Lv.${x.lv||1}`)}
+/* ---- 저장 코드 ---- */
+const CODE_CH="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const fmtCode=c=>c?c.slice(0,4)+"-"+c.slice(4):"";
+const cleanCode=v=>(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8);
+async function makeSaveCode(btn){
+ if(!FS||!UID){toast("서버에 연결된 뒤에 만들 수 있어요");return}
+ btn.disabled=true;
+ try{let code=S.saveCode;
+  if(!code){code=Array.from(crypto.getRandomValues(new Uint8Array(8)),b=>CODE_CH[b%CODE_CH.length]).join("")}
+  S.saveCode=code;S.savedAt=now();
+  await FS.doc("codes/"+code).set({uid:UID,json:JSON.stringify(S),at:now()});
+  markDirty();render();toast("저장 코드에 지금 기록을 담았어요");
+ }catch(e){S.saveCode=null;toast("코드를 만들지 못했어요. 잠시 뒤 다시 해 주세요");console.warn(e)}
+ btn.disabled=false;
+}
+async function loadSaveCode(){
+ const code=cleanCode($("#codeIn")?.value);
+ if(code.length!==8){toast("코드 8글자를 정확히 넣어 주세요");return}
+ if(!FS){toast("서버에 연결된 뒤에 불러올 수 있어요");return}
+ if(code===S.saveCode){toast("지금 기기의 코드예요");return}
+ try{const sn=await FS.doc("codes/"+code).get();
+  if(!sn.exists){toast("그런 코드가 없어요. 다시 확인해 주세요");return}
+  const d=sn.data();let data;try{data=JSON.parse(d.json)}catch(e){toast("코드 안의 기록이 망가졌어요");return}
+  pendingCode=data;
+  openModal(`${head("기록 불러오기")}<p class="sub" style="margin-top:10px">지금 이 기기의 기록이 코드 ${fmtCode(code)}의 기록으로 <b>바뀌어요</b>. 되돌릴 수 없어요.</p>
+   <div class="statrow"><div>펫<b class="mono">${(data.pets||[]).length}</b></div><div>골드<b class="mono">${fmt(data.gold||0)}</b></div><div>도감<b class="mono">${Object.keys(data.codex||{}).length}/16</b></div></div>
+   <div class="row" style="justify-content:center;margin-top:14px"><button class="btn red lg" data-ok>불러오기</button><button class="btn white" data-no>취소</button></div>`,
+   m=>{m.querySelector("[data-x]").onclick=closeModal;m.querySelector("[data-no]").onclick=closeModal;m.querySelector("[data-ok]").onclick=()=>{
+    S=migrate(pendingCode);S.saveCode=null;S.savedAt=now();pendingCode=null;advance(now());markDirty();flush();lastRankWrite=0;writeRank();closeModal();render();toast("기록을 불러왔어요! 이제 이 기기에서 이어 하세요");offlineModal()}});
+ }catch(e){toast("불러오지 못했어요. 인터넷 연결을 확인해 주세요");console.warn(e)}
+}
 function offlineModal(){
  if(S.pend.gold<1&&!S.pend.awaken&&!S.pend.trans)return;if($("#modalRoot").innerHTML)return;
  const r={gold:Math.floor(S.pend.gold),awaken:S.pend.awaken,trans:S.pend.trans};
@@ -1009,6 +1047,9 @@ document.addEventListener("click",e=>{
  if(d.act==="mission"){if(!missionsDone()||S.daily.claimed)return;const r={awaken:2,gold:500,trans:Math.random()<.1?1:0};give(r);S.daily.claimed=true;markDirty();render();return showRewards("미션 완료!",r)}
  if(d.psort){petSort=d.psort;return render()}
  if(d.pfilter){petFilter=d.pfilter;return render()}
+ if(t.hasAttribute("data-mkcode"))return makeSaveCode(t);
+ if(t.hasAttribute("data-ldcode"))return loadSaveCode();
+ if(t.hasAttribute("data-copycode")){const c=fmtCode(S.saveCode);navigator.clipboard?.writeText(c).then(()=>toast("코드를 복사했어요"),()=>toast(`코드: ${c}`));return}
  if(t.hasAttribute("data-savenick")){const v=($("#nick").value||"").replace(/[<>]/g,"").trim().slice(0,12);S.nick=v;markDirty();lastRankWrite=0;writeRank();return toast(v?`닉네임을 "${v}"(으)로 정했어요`:"닉네임을 지웠어요")}
  if(d.adv){advTab=d.adv;return render()}
  if(d.bmode){bmode=d.bmode;if(bmode==="arena")refreshOpps();return render()}
@@ -1058,7 +1099,7 @@ boot(loadLocal());
   // 게임 코드가 쓰는 모양에 맞춘 얇은 연결층
   const db={doc:p=>({get:()=>fs.doc(p).get().then(x=>({exists:x.exists,data:()=>x.data()})),set:d=>fs.doc(p).set(d)}),
    collection:p=>({onSnapshot:(next,err)=>fs.collection(p).onSnapshot(q=>next({docs:q.docs.map(x=>({id:x.id,data:()=>x.data()}))}),err)})};
-  DB=db;UID=uid;dbWritable=true;
+  DB=db;FS=fs;UID=uid;dbWritable=true;
   const snap=await db.doc("data/users/"+uid+"/save").get();
   if(snap.exists){const d=snap.data();if(d&&d.json&&(d.savedAt||0)>(S.savedAt||0)){try{S=migrate(JSON.parse(d.json));advance(now());render();toast("저장된 기록을 불러왔어요");offlineModal()}catch(e){}}}
   dirty=true;await flush();
