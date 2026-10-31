@@ -436,6 +436,7 @@ body{background:radial-gradient(rgba(255,255,255,.4) 1.6px,transparent 2px) 0 0/
 .novascreen b{position:relative;font-family:var(--display);font-weight:400;font-size:34px;color:#FFE27A;text-shadow:0 0 18px #9B6BFF,0 3px 0 #24305E;animation:pop .6s .3s backwards}
 @keyframes nova{0%{opacity:0}15%{opacity:1}75%{opacity:1}100%{opacity:0}}
 @keyframes stars{to{transform:scale(1.4)}}
+.it.inc3{background:conic-gradient(#FFE27A,#FFFFFF,#C9A6FF,#FFE27A);color:#5B3FB8;box-shadow:0 0 6px #FFE27A}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -487,17 +488,18 @@ const EGGS=[
 const eggCost=(e,n=1)=>{const c={gold:e.price*n};for(const k in (e.extra||{}))c[k]=e.extra[k]*n;return c};
 const EGG_OF={};EGGS.forEach(e=>e.sp.forEach(s=>EGG_OF[s]=e));EGGS.forEach(e=>{if(e.rare)EGG_OF[e.rare.sp]=e});
 const spMult=sp=>SPMULT[sp]||EGG_OF[sp].mult||1;
-const pickSp=(E,I)=>E.rare&&Math.random()<(I&&I.k==="inc2"?E.rare.p2:E.rare.p)?E.rare.sp:E.sp[Math.floor(Math.random()*E.sp.length)];
+const pickSp=(E,I)=>E.rare&&Math.random()<(I&&I.k==="inc3"?.1:I&&I.k==="inc2"?E.rare.p2:E.rare.p)?E.rare.sp:E.sp[Math.floor(Math.random()*E.sp.length)];
 const STAGES=["해츨링","꼬마","성장기","성체","각성","전설"];
 const STAGE_GOLD=[1,3,8,20,60,200],STAGE_POW=[10,30,80,200,600,2000];
 const VARS={normal:{name:"일반",inc:1,pow:1,cls:""},gold:{name:"황금",inc:2,pow:1.2,cls:"v-gold",rate:.03},rainbow:{name:"무지개",inc:3,pow:1.5,cls:"v-rainbow",rate:.01},shadow:{name:"그림자",inc:5,pow:2,cls:"v-shadow",rate:.002},celestial:{name:"천상",inc:8,pow:2.5,cls:"v-celes",rate:.000125}};
 const VRANK={normal:0,gold:1,rainbow:2,shadow:3,celestial:4};
 const GRADES=[{k:"N",name:"노멀",m:1,c:"#9AA6C6"},{k:"R",name:"레어",m:1.8,c:"#3D8BFF"},{k:"SR",name:"에픽",m:3,c:"#9B6BFF"},{k:"SSR",name:"유니크",m:5,c:"#FF8A1F"},{k:"UR",name:"신화",m:8,c:"linear-gradient(90deg,#FF6B9A,#FFC633,#5ACB7D,#4AA3FF,#A27BFF)"}];
-const INCS=[{k:"inc0",name:"기본 부화 기계",mult:1,odds:[80,18,2,0]},{k:"inc1",name:"고급 부화 기계",mult:2,odds:[40,45,13,2]},{k:"inc2",name:"황금 부화 기계",mult:4,odds:[0,50,38,12]}];
+const INCS=[{k:"inc0",name:"기본 부화 기계",mult:1,odds:[80,18,2,0]},{k:"inc1",name:"고급 부화 기계",mult:2,odds:[40,45,13,2]},{k:"inc2",name:"황금 부화 기계",mult:4,odds:[0,50,38,12]},{k:"inc3",name:"천상 부화 기계",mult:8,odds:[0,0,55,45]}];
 const gradeOf2=p=>GRADES[p.g||0];
 const gradeChip=p=>`<span class="gr ${gradeOf2(p).k==="UR"?"ur":""}" style="background:${gradeOf2(p).c}">${gradeOf2(p).k}</span>`;
-const LOG_VER=19;
+const LOG_VER=20;
 const UPDATE_LOG=[
+ ["2.9","새 부화 기계: 천상 부화 기계 (10만 골드) · 에픽 55% · 유니크 45%, 노멀·레어가 안 나와요","변이 확률 8배, 천상 변이도 나와요 · 우주 알에서 노바 확률 10%"],
  ["2.8","새 알: 디저트 알 (달콤 속성) · 돈 버는 펫! 마카롱햄찌(동료 수익↑), 말랑젤리곰(자기 수익↑), 솜사탕양(오프라인 보상↑)","엔드 콘텐츠 2탄: 우주 알 · 6챕터 보스 클리어 후, 기본 능력 ×4, 우주 속성은 신성 1.5배·나머지 1.3배","외계냥(속성 불리 무시) · 운석거북(보스 데미지↑) · 블랙홀해파리(승리 보상↑)","???: 우주 알에서 아주 드물게 무언가가 태어난대요","7챕터 은하 추가 · 권장 전투력 100만 → 500만"],
  ["2.7","펫 스킬 · 신수부터 시작! 각성부터 발동, 전설에서 강화","백호: 팀 전투력 +15~25% · 주작: 패배 시 30~50% 부활 · 해태: 상대 전투력 -15~25%","장비 · 모자(전투력), 목걸이(수익), 신발(둘 다) · 일반/희귀/영웅/전설","전투·원정·아레나·월드 보스에서 장비 획득, 펫 탭 → 장비 가방에서 강화·분해"],
  ["2.6","새 알: 공룡 알 (땅 속성) · 꼬마렉스, 뿔뿔이, 바람익룡","땅은 불에 강하고 바람에 약해요","쿠폰 입력 추가 (기록 화면) · 쿠폰으로만 얻는 특별 몬스터 바나몽 (신화 UR 등급)"],
@@ -520,8 +522,8 @@ const UPDATE_LOG=[
 function newsModal(){S.seenLog=LOG_VER;markDirty();renderChrome();
  openModal(`${head("업데이트 소식")}<div class="news">${UPDATE_LOG.map((u,i)=>`<div class="nv ${i===0?"latest":""}"><span class="vtag">v${u[0]}${i===0?" NEW":""}</span><ul>${u.slice(1).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}</div>`,m=>{m.querySelector("[data-x]").onclick=closeModal})}
 
-const ITEMS={gold:["골드","gold","G"],food:["일반 먹이","food","먹"],prem:["고급 먹이","prem","고"],awaken:["각성석","awaken","각"],trans:["초월석","trans","초"],inc0:["기본 부화 기계","inc0","기"],inc1:["고급 부화 기계","inc1","고"],inc2:["황금 부화 기계","inc2","황"],skip:["원정 스킵권","skip","⏩"],prism:["변이 프리즘","prism","◆"],candy:["사탕","candy","🍬"]};
-const PRICE={food:10,prem:100,inc0:50,inc1:500,inc2:5000,skip:5000,prism:50000};
+const ITEMS={gold:["골드","gold","G"],food:["일반 먹이","food","먹"],prem:["고급 먹이","prem","고"],awaken:["각성석","awaken","각"],trans:["초월석","trans","초"],inc0:["기본 부화 기계","inc0","기"],inc1:["고급 부화 기계","inc1","고"],inc2:["황금 부화 기계","inc2","황"],inc3:["천상 부화 기계","inc3","천"],skip:["원정 스킵권","skip","⏩"],prism:["변이 프리즘","prism","◆"],candy:["사탕","candy","🍬"]};
+const PRICE={food:10,prem:100,inc0:50,inc1:500,inc2:5000,inc3:100000,skip:5000,prism:50000};
 const ENH=[{cost:{food:3},p:.9,step:.05,max:1,sulk:0},{cost:{food:6},p:.75,step:.05,max:1,sulk:0},{cost:{prem:5},p:.55,step:.05,max:.9,sulk:0},{cost:{awaken:1,prem:10},p:.35,step:.05,max:.7,sulk:0},{cost:{trans:1,awaken:2},p:.15,step:.03,max:.45,sulk:0}];
 const WORKS=[
  {name:"동네 놀이터",min:0,slots:3,mult:1,cost:0,drop:null,desc:"해츨링부터 일해요"},
@@ -588,7 +590,7 @@ function costChips(c){return Object.entries(c).map(([k,v])=>`<span class="cchip 
 function rewardText(r){return Object.entries(r).filter(([,v])=>v>0).map(([k,v])=>`${ITEMS[k][0]} ${fmt(v)}`).join(", ")}
 
 /* ================= 상태 ================= */
-function freshState(){return {v:2,gold:300,items:{food:10,prem:0,awaken:0,trans:0,inc0:1,inc1:0,inc2:0,skip:1},pend:{gold:0,awaken:0,trans:0},
+function freshState(){return {v:2,gold:300,items:{food:10,prem:0,awaken:0,trans:0,inc0:1,inc1:0,inc2:0,inc3:0,skip:1},pend:{gold:0,awaken:0,trans:0},
  eggs:[{id:1,egg:"grass"}],pets:[],works:[true,false,false,false,false],exps:{},team:[],cleared:-1,codex:{},album:[],
  daily:{day:"",attended:"",streak:0,m:{enh:0,exp:0,bat:0},claimed:false},weekly:{week:"",best:0,day:"",tries:0,claimed:false},
  nick:"",train:{atk:0,work:0,exp:0},gear:[],event:{dmg:0,hits:0,total:0,day:"",claimed:{}},arena:{pts:1000,best:1000,week:"",day:"",tickets:5,w:0,l:0,claimed:false,log:[]},once:{},stats:{totalGold:0,adopted:0,bestStage:-1,wins:0},lastTick:now(),nextId:2,savedAt:0}}
@@ -1000,7 +1002,7 @@ function shopView(){
    <div class="eggshape egg-${e.k} wobble" style="width:70px;height:88px;margin:8px auto"></div><div class="t">${e.name}</div>
    <div class="sub egn">${e.sp.map(s=>S.codex[s]?SP[s][0]:"???").join(" · ")}${e.mult?`<br><b style="color:#C98A00">기본 능력 ×${e.mult}</b>`:""}</div>
    ${unl<e.unlock?`<button class="btn sm" disabled>🔒 ${e.unlock}챕터 보스 클리어</button></div>`:`<div class="row" style="justify-content:center;gap:6px"><button class="btn sm" data-buyegg="${i}" ${canPay(eggCost(e))?"":"disabled"}>${itIcon("gold")}${fmt(e.price)}${e.extra?` +${itIcon("trans")}${e.extra.trans}`:""}</button>${e.extra?"":`<button class="btn sm white" data-buyegg10="${i}" ${canPay(eggCost(e,10))?"":"disabled"}>10개</button>`}</div></div>`}`}).join("")}</div>`:""}
- ${shopTab==="mat"?`<p class="sub">각성석과 초월석은 팔지 않아요. 원정, 전투, 출석, 미션, 일터에서 모아요.</p><div class="list">${["food","prem","inc0","inc1","inc2","skip","prism"].map(k=>`<div class="li">${itIcon(k,true)}<div class="grow"><div class="t">${ITEMS[k][0]}</div><div class="sub">보유 ${fmt(have(k))}${k==="prism"?" · 펫에게 더 좋은 변이를 붙여요":k==="skip"?" · 진행 중인 원정을 바로 끝내요":k.startsWith("inc")?" · "+(()=>{const I=INCS.find(x=>x.k===k);return GRADES.map((g,j)=>I.odds[j]?`${g.k} ${I.odds[j]}%`:"").filter(Boolean).join(" ")})():""}</div></div>
+ ${shopTab==="mat"?`<p class="sub">각성석과 초월석은 팔지 않아요. 원정, 전투, 출석, 미션, 일터에서 모아요.</p><div class="list">${["food","prem","inc0","inc1","inc2","inc3","skip","prism"].map(k=>`<div class="li">${itIcon(k,true)}<div class="grow"><div class="t">${ITEMS[k][0]}</div><div class="sub">보유 ${fmt(have(k))}${k==="prism"?" · 펫에게 더 좋은 변이를 붙여요":k==="skip"?" · 진행 중인 원정을 바로 끝내요":k.startsWith("inc")?" · "+(()=>{const I=INCS.find(x=>x.k===k);return GRADES.map((g,j)=>I.odds[j]?`${g.k} ${I.odds[j]}%`:"").filter(Boolean).join(" ")})():""}</div></div>
    <div class="row"><button class="btn sm white" data-buy="${k}" data-n="1" ${S.gold<PRICE[k]?"disabled":""}>${fmt(PRICE[k])}</button><button class="btn sm" data-buy="${k}" data-n="10" ${S.gold<PRICE[k]*10?"disabled":""}>10개</button></div></div>`).join("")}</div>`:""}
  ${shopTab==="syn"?`<div class="card" style="text-align:center"><div class="row" style="justify-content:center;gap:14px">${itIcon("awaken",true)}<span style="font-family:var(--display);font-size:22px">× 8 →</span>${itIcon("trans",true)}</div>
    <p class="sub" style="margin-top:8px">남는 각성석 8개를 초월석 1개로 바꿔요 (보유 각성석 ${have("awaken")})</p><button class="btn lg" style="margin-top:10px" data-synth ${have("awaken")<8?"disabled":""}>합성하기</button></div>`:""}`;
@@ -1128,7 +1130,7 @@ function hatch(eggId){
 }
 async function doHatch(e,E,I){
  if(have(I.k)<1||!S.eggs.includes(e))return;S.items[I.k]--;
- let v="normal";const roll=Math.random();let acc=0;for(const k of [...(I.k==="inc2"?["celestial"]:[]),"shadow","rainbow","gold"]){acc+=VARS[k].rate*I.mult;if(roll<acc){v=k;break}}
+ let v="normal";const roll=Math.random();let acc=0;for(const k of [...(I.k==="inc2"||I.k==="inc3"?["celestial"]:[]),"shadow","rainbow","gold"]){acc+=VARS[k].rate*I.mult;if(roll<acc){v=k;break}}
  const sp=pickSp(E,I),isNew=!S.codex[sp];
  let gi=0;{const r=Math.random()*100;let a=0;for(let i=0;i<4;i++){a+=I.odds[i];if(r<a){gi=i;break}}}
  const p={id:S.nextId++,sp,v,g:gi,stage:0,fails:0,work:null,exp:null,born:now()};
@@ -1223,7 +1225,7 @@ async function loadTransfer(){let data;try{data=await importText($("#xferIn")?.v
   <div class="row" style="justify-content:center;margin-top:14px"><button class="btn red lg" data-ok>불러오기</button><button class="btn white" data-no>취소</button></div>`,
   m=>{m.querySelector("[data-x]").onclick=closeModal;m.querySelector("[data-no]").onclick=closeModal;m.querySelector("[data-ok]").onclick=()=>{
    S=migrate(data);S.saveCode=null;S.savedAt=now();advance(now());markDirty();flush();lastRankWrite=0;writeRank();closeModal();render();toast("기록을 불러왔어요!");offlineModal()}})}
-function rollPet(E,I){let v="normal";const roll=Math.random();let acc=0;for(const k of [...(I.k==="inc2"?["celestial"]:[]),"shadow","rainbow","gold"]){acc+=VARS[k].rate*I.mult;if(roll<acc){v=k;break}}
+function rollPet(E,I){let v="normal";const roll=Math.random();let acc=0;for(const k of [...(I.k==="inc2"||I.k==="inc3"?["celestial"]:[]),"shadow","rainbow","gold"]){acc+=VARS[k].rate*I.mult;if(roll<acc){v=k;break}}
  const sp=pickSp(E,I);let gi=0;{const r=Math.random()*100;let a=0;for(let i=0;i<4;i++){a+=I.odds[i];if(r<a){gi=i;break}}}
  return {id:S.nextId++,sp,v,g:gi,stage:0,lv:1,fails:0,work:null,exp:null,born:now()}}
 function bulkHatchModal(){
@@ -1233,12 +1235,12 @@ function bulkHatchModal(){
   <div class="eggrow">${S.eggs.slice(0,12).map(e=>`<div class="eggshape egg-${e.egg} wobble" style="width:34px;height:42px;animation-delay:-${Math.random()}s"></div>`).join("")}${S.eggs.length>12?`<span class="sub">+${S.eggs.length-12}</span>`:""}</div>
   <p class="sub" style="text-align:center">펫 자리 ${room}칸 남음${room<S.eggs.length?" · 자리만큼만 부화해요":""}</p>
   <div class="list" style="margin-top:10px">
-   <button class="li" data-bh="best" ${cnt("best")?"":"disabled"} style="text-align:left"><span class="qi" style="background:#FF6B6B;margin:0">추</span><div class="grow"><div class="t">좋은 기계부터 쓰기</div><div class="sub">황금 → 고급 → 기본 순서로 ${cnt("best")}개 부화</div></div></button>
+   <button class="li" data-bh="best" ${cnt("best")?"":"disabled"} style="text-align:left"><span class="qi" style="background:#FF6B6B;margin:0">추</span><div class="grow"><div class="t">좋은 기계부터 쓰기</div><div class="sub">천상 → 황금 → 고급 → 기본 순서로 ${cnt("best")}개 부화</div></div></button>
    ${INCS.map(I=>`<button class="li" data-bh="${I.k}" ${cnt(I.k)?"":"disabled"} style="text-align:left">${itIcon(I.k,true)}<div class="grow"><div class="t">${I.name}만</div><div class="sub">보유 ${have(I.k)} · ${cnt(I.k)}개 부화</div></div></button>`).join("")}
   </div>`,m=>{m.querySelector("[data-x]").onclick=closeModal;m.querySelectorAll("[data-bh]").forEach(b=>b.onclick=()=>{if(!b.disabled)doBulkHatch(b.dataset.bh)})});
 }
 async function doBulkHatch(mode){
- const got=[];const order=mode==="best"?["inc2","inc1","inc0"]:[mode];
+ const got=[];const order=mode==="best"?["inc3","inc2","inc1","inc0"]:[mode];
  for(const e of [...S.eggs]){if(S.pets.length>=maxPets())break;const k=order.find(x=>have(x)>0);if(!k)break;
   const I=INCS.find(x=>x.k===k),E=EGGS.find(x=>x.k===e.egg);S.items[k]--;
   const p=rollPet(E,I);p.isNew=!S.codex[p.sp];S.pets.push(p);S.eggs=S.eggs.filter(x=>x!==e);note(p);got.push(p);
