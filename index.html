@@ -370,6 +370,10 @@ body{background:radial-gradient(rgba(255,255,255,.4) 1.6px,transparent 2px) 0 0/
 .vtag{font-family:var(--display);font-size:13px;background:var(--ink);color:#fff;border-radius:999px;padding:1px 9px}
 .nv ul{margin:6px 0 0;padding-left:18px;font-size:13.5px}
 .nv li+li{margin-top:2px}
+.eggrow{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:12px 0 4px}.eggrow .eggshape{margin:0;border-width:2px}
+.bhgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px;margin-top:12px;max-height:46vh;overflow:auto;padding:4px}
+.bhgrid .pc{box-shadow:0 2px 0 var(--ink);animation:pop .35s backwards}
+.bhgrid .pc .gr{font-size:9px;padding:0 5px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -417,8 +421,9 @@ const GRADES=[{k:"N",name:"노멀",m:1,c:"#9AA6C6"},{k:"R",name:"레어",m:1.8,c
 const INCS=[{k:"inc0",name:"기본 부화 기계",mult:1,odds:[80,18,2,0]},{k:"inc1",name:"고급 부화 기계",mult:2,odds:[40,45,13,2]},{k:"inc2",name:"황금 부화 기계",mult:4,odds:[0,50,38,12]}];
 const gradeOf2=p=>GRADES[p.g||0];
 const gradeChip=p=>`<span class="gr ${gradeOf2(p).k==="UR"?"ur":""}" style="background:${gradeOf2(p).c}">${gradeOf2(p).k}</span>`;
-const LOG_VER=10;
+const LOG_VER=11;
 const UPDATE_LOG=[
+ ["2.0","알 한번에 부화 · 좋은 부화 기계부터 자동으로 써요","상점에서 알 10개 한번에 사기"],
  ["1.9","새 등급 신화(UR) 추가 · 유니크 2마리를 합성해야만 얻을 수 있어요 (수익·전투력 ×8)","업데이트 소식 창 추가"],
  ["1.8","원정 스킵권 추가 · 출석, 미션, 상점에서 얻어요"],
  ["1.7","아레나 도전권 구매 · 하루 10장까지, 살 때마다 가격 2배"],
@@ -627,7 +632,7 @@ function homeView(){
   <div class="qc"><span class="qi" style="background:#5ACB7D">미</span><span class="t">오늘 미션</span><div class="bar" style="height:9px"><i style="width:${mp*10}%"></i></div><span class="s">강화 ${Math.min(m.enh,3)}/3 원정 ${Math.min(m.exp,2)}/2 전투 ${Math.min(m.bat,5)}/5</span><button class="btn sm ${missionsDone()&&!d.claimed?"red":""}" data-act="mission" ${!missionsDone()||d.claimed?"disabled":""}>${d.claimed?"완료":"받기"}</button></div>
   <div class="qc"><span class="qi" style="background:#8B6CFF">보</span><span class="t">주간 보스</span><span class="s">최고 ${fmt(S.weekly.best)}</span><button class="btn sm blue" data-tab="battle" ${S.cleared<9?"disabled":""}>${S.cleared<9?"1챕터 후":"도전"}</button></div>
  </div>
- <div class="card"><div class="spread"><h2 class="h">알 둥지</h2><button class="btn sm white" data-tab="shop">알 사기</button></div>
+ <div class="card"><div class="spread"><h2 class="h">알 둥지</h2><div class="row">${S.eggs.length>=2?`<button class="btn sm red" data-bulkhatch>한번에 부화 (${S.eggs.length})</button>`:""}<button class="btn sm white" data-tab="shop">알 사기</button></div></div>
   ${S.eggs.length?`<div class="eggs" style="margin-top:8px">${S.eggs.map(e=>{const E=EGGS.find(x=>x.k===e.egg);return `<div class="eggcard"><div class="eggshape egg-${e.egg} wobble"></div><span style="font-family:var(--display);font-size:14px">${E.name}</span><button class="btn sm" data-egg="${e.id}">부화</button></div>`}).join("")}</div>`:`<p class="sub" style="margin-top:6px">부화를 기다리는 알이 없어요. 상점에서 새 알을 사 보세요.</p>`}
  </div>`;
 }
@@ -848,7 +853,7 @@ function shopView(){
   return `<div class="egt t-${e.k}"><div class="row" style="justify-content:space-between">${elBadge(e.k)}<span class="sub mono">도감 ${got}/${e.sp.length}</span></div>
    <div class="eggshape egg-${e.k} wobble" style="width:70px;height:88px;margin:8px auto"></div><div class="t">${e.name}</div>
    <div class="sub egn">${e.sp.map(s=>S.codex[s]?SP[s][0]:"???").join(" · ")}</div>
-   <button class="btn sm" data-buyegg="${i}" ${S.gold<e.price?"disabled":""}>${itIcon("gold")}${fmt(e.price)}</button></div>`}).join("")}</div>`:""}
+   <div class="row" style="justify-content:center;gap:6px"><button class="btn sm" data-buyegg="${i}" ${S.gold<e.price?"disabled":""}>${itIcon("gold")}${fmt(e.price)}</button><button class="btn sm white" data-buyegg10="${i}" ${S.gold<e.price*10?"disabled":""}>10개</button></div></div>`}).join("")}</div>`:""}
  ${shopTab==="mat"?`<p class="sub">각성석과 초월석은 팔지 않아요. 원정, 전투, 출석, 미션, 일터에서 모아요.</p><div class="list">${["food","prem","inc0","inc1","inc2","skip"].map(k=>`<div class="li">${itIcon(k,true)}<div class="grow"><div class="t">${ITEMS[k][0]}</div><div class="sub">보유 ${fmt(have(k))}${k==="skip"?" · 진행 중인 원정을 바로 끝내요":k.startsWith("inc")?" · "+(()=>{const I=INCS.find(x=>x.k===k);return GRADES.map((g,j)=>I.odds[j]?`${g.k} ${I.odds[j]}%`:"").filter(Boolean).join(" ")})():""}</div></div>
    <div class="row"><button class="btn sm white" data-buy="${k}" data-n="1" ${S.gold<PRICE[k]?"disabled":""}>${fmt(PRICE[k])}</button><button class="btn sm" data-buy="${k}" data-n="10" ${S.gold<PRICE[k]*10?"disabled":""}>10개</button></div></div>`).join("")}</div>`:""}
  ${shopTab==="syn"?`<div class="card" style="text-align:center"><div class="row" style="justify-content:center;gap:14px">${itIcon("awaken",true)}<span style="font-family:var(--display);font-size:22px">× 8 →</span>${itIcon("trans",true)}</div>
@@ -1061,6 +1066,42 @@ async function loadTransfer(){let data;try{data=await importText($("#xferIn")?.v
   <div class="row" style="justify-content:center;margin-top:14px"><button class="btn red lg" data-ok>불러오기</button><button class="btn white" data-no>취소</button></div>`,
   m=>{m.querySelector("[data-x]").onclick=closeModal;m.querySelector("[data-no]").onclick=closeModal;m.querySelector("[data-ok]").onclick=()=>{
    S=migrate(data);S.saveCode=null;S.savedAt=now();advance(now());markDirty();flush();lastRankWrite=0;writeRank();closeModal();render();toast("기록을 불러왔어요!");offlineModal()}})}
+function rollPet(E,I){let v="normal";const roll=Math.random();let acc=0;for(const k of ["shadow","rainbow","gold"]){acc+=VARS[k].rate*I.mult;if(roll<acc){v=k;break}}
+ const sp=E.sp[Math.floor(Math.random()*E.sp.length)];let gi=0;{const r=Math.random()*100;let a=0;for(let i=0;i<4;i++){a+=I.odds[i];if(r<a){gi=i;break}}}
+ return {id:S.nextId++,sp,v,g:gi,stage:0,lv:1,fails:0,work:null,exp:null,born:now()}}
+function bulkHatchModal(){
+ const room=MAX_PETS-S.pets.length,incs=INCS.map(I=>have(I.k)),tot=incs.reduce((a,b)=>a+b,0);
+ const cnt=k=>Math.min(S.eggs.length,room,k==="best"?tot:have(k));
+ openModal(`${head(`알 ${S.eggs.length}개 한번에 부화`)}
+  <div class="eggrow">${S.eggs.slice(0,12).map(e=>`<div class="eggshape egg-${e.egg} wobble" style="width:34px;height:42px;animation-delay:-${Math.random()}s"></div>`).join("")}${S.eggs.length>12?`<span class="sub">+${S.eggs.length-12}</span>`:""}</div>
+  <p class="sub" style="text-align:center">펫 자리 ${room}칸 남음${room<S.eggs.length?" · 자리만큼만 부화해요":""}</p>
+  <div class="list" style="margin-top:10px">
+   <button class="li" data-bh="best" ${cnt("best")?"":"disabled"} style="text-align:left"><span class="qi" style="background:#FF6B6B;margin:0">추</span><div class="grow"><div class="t">좋은 기계부터 쓰기</div><div class="sub">황금 → 고급 → 기본 순서로 ${cnt("best")}개 부화</div></div></button>
+   ${INCS.map(I=>`<button class="li" data-bh="${I.k}" ${cnt(I.k)?"":"disabled"} style="text-align:left">${itIcon(I.k,true)}<div class="grow"><div class="t">${I.name}만</div><div class="sub">보유 ${have(I.k)} · ${cnt(I.k)}개 부화</div></div></button>`).join("")}
+  </div>`,m=>{m.querySelector("[data-x]").onclick=closeModal;m.querySelectorAll("[data-bh]").forEach(b=>b.onclick=()=>{if(!b.disabled)doBulkHatch(b.dataset.bh)})});
+}
+async function doBulkHatch(mode){
+ const got=[];const order=mode==="best"?["inc2","inc1","inc0"]:[mode];
+ for(const e of [...S.eggs]){if(S.pets.length>=MAX_PETS)break;const k=order.find(x=>have(x)>0);if(!k)break;
+  const I=INCS.find(x=>x.k===k),E=EGGS.find(x=>x.k===e.egg);S.items[k]--;
+  const p=rollPet(E,I);p.isNew=!S.codex[p.sp];S.pets.push(p);S.eggs=S.eggs.filter(x=>x!==e);note(p);got.push(p);
+  if(teamPets().length<3)S.team=[...teamPets().map(x=>x.id),p.id];
+  if(S.pets.filter(x=>x.work===0).length<WORKS[0].slots)p.work=0;}
+ if(!got.length){toast("부화 기계나 펫 자리가 부족해요");return}
+ S.daily.m.enh+=0;markDirty();
+ const m=openModal(`<div class="stage-bg" style="height:200px" id="bhs">${S.eggs.length+got.length>0?got.slice(0,8).map((p,i)=>`<div class="eggshape egg-${SP[p.sp][1]} crack" style="position:absolute;left:${8+i*11}%;top:${30+(i%2)*30}%;width:44px;height:56px;animation-delay:${i*60}ms"></div>`).join(""):""}</div><div id="bhr"></div>`);
+ await sleep(900);const hs=$("#bhs");if(!hs)return;
+ got.sort((a,b)=>(b.g||0)-(a.g||0)||(b.v!=="normal")-(a.v!=="normal"));const best=got[0];
+ hs.innerHTML=`<div class="flash"></div><div class="rays ${(best.g||0)>=2||best.v!=="normal"?"gold":""}"></div><div class="hero reveal" style="width:150px">${sprite(best.sp,0,best.v)}</div><span class="grbig" style="background:${GRADES[best.g||0].c}">최고 ${GRADES[best.g||0].k} ${GRADES[best.g||0].name}</span>`;
+ const sum=GRADES.map((g,i)=>[g,got.filter(p=>(p.g||0)===i).length]).filter(x=>x[1]).reverse();
+ $("#bhr").innerHTML=`<p class="bigtitle" style="font-size:26px">${got.length}마리 탄생!</p>
+  <div class="row" style="justify-content:center;gap:6px">${sum.map(([g,n])=>`<span class="gr ${g.k==="UR"?"ur":""}" style="background:${g.c}">${g.k} ${n}</span>`).join("")}${got.filter(p=>p.isNew).length?`<span class="pill" style="background:var(--coral);color:#fff">NEW ${got.filter(p=>p.isNew).length}</span>`:""}</div>
+  <div class="bhgrid">${got.map((p,i)=>`<div class="pc r0 t-${petEl(p)}" style="animation-delay:${i*50}ms"><div class="in"><span class="tr">${gradeChip(p)}</span>${p.isNew?'<span class="tl"><span class="pill" style="background:var(--coral);color:#fff;font-size:9px;padding:0 5px">NEW</span></span>':""}${sprite(p.sp,0,p.v)}<span class="nm" style="font-size:11.5px">${p.v!=="normal"?`<em class="vn">${VARS[p.v].name}</em> `:""}${esc(SP[p.sp][0])}</span></div></div>`).join("")}</div>
+  <div class="row" style="justify-content:center;margin-top:12px"><button class="btn lg" data-ok>확인</button><button class="btn white" data-gopets>펫 보러 가기</button></div>`;
+ got.forEach(p=>delete p.isNew);
+ m.querySelector("[data-ok]").onclick=()=>{closeModal();render()};m.querySelector("[data-gopets]").onclick=()=>{closeModal();go("pets")};
+ render();
+}
 function offlineModal(){
  if(S.pend.gold<1&&!S.pend.awaken&&!S.pend.trans)return;if($("#modalRoot").innerHTML)return;
  const r={gold:Math.floor(S.pend.gold),awaken:S.pend.awaken,trans:S.pend.trans};
@@ -1130,6 +1171,7 @@ document.addEventListener("click",e=>{
  if(d.selq){if(d.selq==="c")sel.clear();else S.pets.filter(p=>p.exp==null&&(petFilter==="all"||petEl(p)===petFilter)&&(d.selq==="n"?(p.g||0)===0:p.stage===0)).forEach(p=>sel.add(p.id));return render()}
  if(t.hasAttribute("data-bulkgo"))return bulkAdopt();
  if(d.egg)return hatch(+d.egg);
+ if(t.hasAttribute("data-bulkhatch"))return bulkHatchModal();
  if(d.goshop){shopTab=["awaken","trans"].includes(d.goshop)?"syn":"mat";return go("shop")}
  if(t.hasAttribute("data-collect"))return collect(e);
  if(d.goal){const g=d.goal;if(g==="egg"){const b=$("[data-egg]");b?b.scrollIntoView({behavior:"smooth",block:"center"}):go("shop")}else if(g.startsWith("pet:"))petModal(+g.slice(4));else if(g==="adv"){advTab="work";go("adv")}else if(g==="train"){advTab="train";go("adv")}else go(g);return}
@@ -1165,6 +1207,7 @@ document.addEventListener("click",e=>{
  if(t.hasAttribute("data-wboss"))return weeklyFight();
  if(t.hasAttribute("data-wclaim")){if(S.weekly.claimed||!S.weekly.best)return;const g=gradeOf(S.weekly.best);give(g[2]);S.weekly.claimed=true;markDirty();render();return showRewards(`${g[0]} 등급 보상`,g[2])}
  if(d.shop){shopTab=d.shop;return render()}
+ if(d.buyegg10!=null){const E=EGGS[+d.buyegg10];if(pay({gold:E.price*10})){for(let k=0;k<10;k++)S.eggs.push({id:S.nextId++,egg:E.k});markDirty();render();toast(`${E.name} 10개를 샀어요. 홈에서 한번에 부화시켜요`)}return}
  if(d.buyegg){const E=EGGS[+d.buyegg];if(pay({gold:E.price})){S.eggs.push({id:S.nextId++,egg:E.k});markDirty();render();toast(`${E.name}을(를) 샀어요. 홈의 알 둥지에서 부화시켜요`)}return}
  if(d.buy){const k=d.buy,n=+d.n;if(pay({gold:PRICE[k]*n})){give({[k]:n});markDirty();render();toast(`${ITEMS[k][0]} ${n}개를 샀어요`)}return}
  if(t.hasAttribute("data-synth")){if(pay({awaken:8})){give({trans:1});markDirty();render();showRewards("합성 성공",{trans:1})}return}
