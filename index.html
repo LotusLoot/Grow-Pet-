@@ -438,8 +438,9 @@ const GRADES=[{k:"N",name:"노멀",m:1,c:"#9AA6C6"},{k:"R",name:"레어",m:1.8,c
 const INCS=[{k:"inc0",name:"기본 부화 기계",mult:1,odds:[80,18,2,0]},{k:"inc1",name:"고급 부화 기계",mult:2,odds:[40,45,13,2]},{k:"inc2",name:"황금 부화 기계",mult:4,odds:[0,50,38,12]}];
 const gradeOf2=p=>GRADES[p.g||0];
 const gradeChip=p=>`<span class="gr ${gradeOf2(p).k==="UR"?"ur":""}" style="background:${gradeOf2(p).c}">${gradeOf2(p).k}</span>`;
-const LOG_VER=13;
+const LOG_VER=14;
 const UPDATE_LOG=[
+ ["2.3","펫 자리 늘리기 · 펫 탭의 +10칸 버튼, 최대 100칸까지"],
  ["2.2","엔드 콘텐츠: 신수의 알 (백호·주작·해태) · 5챕터 보스 클리어 후, 기본 능력 ×2.5","새 속성 신성 · 모든 속성에게 1.25배","6챕터 천상 추가","새 변이 천상 · 황금 부화 기계로만, 수익 ×8 전투력 ×2.5","변이 프리즘 · 펫에게 더 좋은 변이를 붙여요","주간 보스 도전 횟수 제한 삭제"],
  ["2.1","새 알: 요정 알 (빛 속성) · 몽실유니, 꽃잎요정, 무지개나비","빛과 별은 서로에게 1.5배 강해요","도감 19종 완성 업적 추가"],
  ["2.0","알 한번에 부화 · 좋은 부화 기계부터 자동으로 써요","상점에서 알 10개 한번에 사기"],
@@ -487,7 +488,9 @@ const ONCE=[
  ["vgold","황금 변이 첫 발견",{awaken:2},s=>hasVar(s,"gold")],["vrainbow","무지개 변이 첫 발견",{awaken:2},s=>hasVar(s,"rainbow")],["vshadow","그림자 변이 첫 발견",{awaken:2},s=>hasVar(s,"shadow")],
  ["allwork","일터 5곳 모두 해금",{awaken:5,trans:1},s=>s.works.every(Boolean)],
  ...CH.map((c,i)=>["ch"+i,`챕터 ${i+1} ${c.name} 클리어`,{awaken:2},s=>s.cleared>=i*10+9])];
-const MAX_PETS=40;
+const SLOT_BASE=40,SLOT_MAXUP=6;
+const maxPets=()=>SLOT_BASE+((S&&S.slots)||0)*10;
+const slotCost=()=>Math.round(50000*Math.pow(2,(S.slots||0)));
 
 /* ================= 아이콘 ================= */
 const ICON={
@@ -696,7 +699,7 @@ function petsView(){
  const list=S.pets.filter(p=>petFilter==="all"||petEl(p)===petFilter);
  const sorts={stage:(a,b)=>b.stage-a.stage||petPow(b)-petPow(a),pow:(a,b)=>petPow(b)-petPow(a),inc:(a,b)=>petInc(b)-petInc(a),new:(a,b)=>b.id-a.id};
  list.sort(sorts[petSort]);
- return `<div class="spread"><h2 class="h">내 펫 <span class="sub mono">${S.pets.length}/${MAX_PETS}</span></h2><button class="btn sm ${selMode?"white":"red"}" data-selmode>${selMode?"선택 끝내기":"여러 마리 보내기"}</button>
+ return `<div class="spread"><h2 class="h">내 펫 <span class="sub mono">${S.pets.length}/${maxPets()}</span>${(S.slots||0)<SLOT_MAXUP?`<button class="btn sm green" data-slotup style="margin-left:6px">+10칸</button>`:""}</h2><button class="btn sm ${selMode?"white":"red"}" data-selmode>${selMode?"선택 끝내기":"여러 마리 보내기"}</button>
   <div class="seg">${[["stage","단계"],["pow","전투력"],["inc","수익"],["new","최신"]].map(([k,n])=>`<button aria-pressed="${petSort===k}" data-psort="${k}">${n}</button>`).join("")}</div></div>
  <div class="seg">${[["all","전체"],...Object.entries(EL)].map(([k,n])=>`<button aria-pressed="${petFilter===k}" data-pfilter="${k}">${n}</button>`).join("")}</div>
  ${selMode?`<div class="selhint"><span>보낼 펫을 눌러 고르세요. 원정 중인 펫은 고를 수 없어요.</span><div class="row"><button class="btn sm white" data-selq="n">노멀 전부</button><button class="btn sm white" data-selq="h">해츨링 전부</button><button class="btn sm white" data-selq="c">선택 해제</button></div></div>`:""}
@@ -985,7 +988,7 @@ function codexModal(sp){const c=S.codex[sp];if(!c)return;
 /* ================= 행동 ================= */
 function hatch(eggId){
  const e=S.eggs.find(x=>x.id===eggId);if(!e)return;const E=EGGS.find(x=>x.k===e.egg);
- if(S.pets.length>=MAX_PETS){toast("펫 자리가 꽉 찼어요. 주인을 찾아주면 자리가 생겨요");return}
+ if(S.pets.length>=maxPets()){toast("펫 자리가 꽉 찼어요. 펫 탭에서 자리를 늘리거나 주인을 찾아 주세요");return}
  const tot=(VARS.gold.rate+VARS.rainbow.rate+VARS.shadow.rate)*100;
  openModal(`${head(E.name+" 부화")}
   <div class="stage-bg" style="margin-top:10px;height:190px"><div class="eggshape egg-${e.egg} wobble" style="width:96px;height:120px"></div></div>
@@ -1094,7 +1097,7 @@ function rollPet(E,I){let v="normal";const roll=Math.random();let acc=0;for(cons
  const sp=E.sp[Math.floor(Math.random()*E.sp.length)];let gi=0;{const r=Math.random()*100;let a=0;for(let i=0;i<4;i++){a+=I.odds[i];if(r<a){gi=i;break}}}
  return {id:S.nextId++,sp,v,g:gi,stage:0,lv:1,fails:0,work:null,exp:null,born:now()}}
 function bulkHatchModal(){
- const room=MAX_PETS-S.pets.length,incs=INCS.map(I=>have(I.k)),tot=incs.reduce((a,b)=>a+b,0);
+ const room=maxPets()-S.pets.length,incs=INCS.map(I=>have(I.k)),tot=incs.reduce((a,b)=>a+b,0);
  const cnt=k=>Math.min(S.eggs.length,room,k==="best"?tot:have(k));
  openModal(`${head(`알 ${S.eggs.length}개 한번에 부화`)}
   <div class="eggrow">${S.eggs.slice(0,12).map(e=>`<div class="eggshape egg-${e.egg} wobble" style="width:34px;height:42px;animation-delay:-${Math.random()}s"></div>`).join("")}${S.eggs.length>12?`<span class="sub">+${S.eggs.length-12}</span>`:""}</div>
@@ -1106,7 +1109,7 @@ function bulkHatchModal(){
 }
 async function doBulkHatch(mode){
  const got=[];const order=mode==="best"?["inc2","inc1","inc0"]:[mode];
- for(const e of [...S.eggs]){if(S.pets.length>=MAX_PETS)break;const k=order.find(x=>have(x)>0);if(!k)break;
+ for(const e of [...S.eggs]){if(S.pets.length>=maxPets())break;const k=order.find(x=>have(x)>0);if(!k)break;
   const I=INCS.find(x=>x.k===k),E=EGGS.find(x=>x.k===e.egg);S.items[k]--;
   const p=rollPet(E,I);p.isNew=!S.codex[p.sp];S.pets.push(p);S.eggs=S.eggs.filter(x=>x!==e);note(p);got.push(p);
   if(teamPets().length<3)S.team=[...teamPets().map(x=>x.id),p.id];
@@ -1132,6 +1135,12 @@ async function usePrism(p){if(have("prism")<1||p.v==="celestial")return;S.items.
  if(ok){p.v=got;note(p)}markDirty();render();const m=petModal(p.id,ok?"reveal":"shake");
  if(ok){const sb=m.querySelector(".stage-bg");sb&&!sb.querySelector(".rays")&&sb.insertAdjacentHTML("afterbegin",`<div class="rays ${got}"></div>`);m.insertAdjacentHTML("afterbegin",`<p class="bigtitle">${VARS[got].name} 변이!</p>`)}
  else m.insertAdjacentHTML("afterbegin",`<p class="bigtitle lose">${VARS[got].name}…</p><p class="sub" style="text-align:center">지금 변이(${VARS[p.v].name})보다 좋지 않아서 그대로 뒀어요</p>`)}
+function slotModal(){const n=S.slots||0,c=slotCost();
+ openModal(`${head("펫 자리 늘리기")}<p class="bigtitle mono" style="font-size:30px">${maxPets()} → ${maxPets()+10}칸</p>
+  <div class="bar" style="margin:10px 0"><i style="width:${(n)/SLOT_MAXUP*100}%;background:var(--mint)"></i></div>
+  <p class="sub" style="text-align:center">최대 100칸까지 늘릴 수 있어요 (${n}/${SLOT_MAXUP}번 늘림)<br>가격 ${itIcon("gold")} <b class="mono">${fmt(c)}</b> · 늘릴 때마다 다음 가격이 2배가 돼요</p>
+  <div class="row" style="justify-content:center;margin-top:12px"><button class="btn lg green" data-ok ${S.gold<c?"disabled":""}>${S.gold<c?"골드가 부족해요":"늘리기"}</button><button class="btn white" data-no>취소</button></div>`,
+  m=>{m.querySelector("[data-x]").onclick=closeModal;m.querySelector("[data-no]").onclick=closeModal;m.querySelector("[data-ok]").onclick=()=>{if((S.slots||0)>=SLOT_MAXUP||!pay({gold:slotCost()}))return;S.slots=(S.slots||0)+1;markDirty();render();toast(`펫 자리가 ${maxPets()}칸이 됐어요!`);if(S.slots<SLOT_MAXUP)slotModal();else closeModal()}})}
 function offlineModal(){
  if(S.pend.gold<1&&!S.pend.awaken&&!S.pend.trans)return;if($("#modalRoot").innerHTML)return;
  const r={gold:Math.floor(S.pend.gold),awaken:S.pend.awaken,trans:S.pend.trans};
@@ -1215,6 +1224,7 @@ document.addEventListener("click",e=>{
  if(t.hasAttribute("data-savenick")){const v=($("#nick").value||"").replace(/[<>]/g,"").trim().slice(0,12);S.nick=v;markDirty();lastRankWrite=0;writeRank();return toast(v?`닉네임을 "${v}"(으)로 정했어요`:"닉네임을 지웠어요")}
  if(t.hasAttribute("data-xcopy"))return copyTransfer(t);
  if(t.hasAttribute("data-xload"))return loadTransfer();
+ if(t.hasAttribute("data-slotup"))return slotModal();
  if(d.adv){advTab=d.adv;return render()}
  if(d.bmode){bmode=d.bmode;if(bmode==="arena")refreshOpps();return render()}
  if(t.hasAttribute("data-reopp")){refreshOpps();return render()}
