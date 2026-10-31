@@ -79,7 +79,7 @@ button:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
 .bar{height:12px;background:var(--paper2);border-radius:99px;overflow:hidden;border:2px solid var(--ink)}
 .bar>i{display:block;height:100%;background:var(--yolk);transition:width .35s}
 .empty{color:var(--muted);text-align:center;padding:18px;border:2.5px dashed #B9C3DD;border-radius:16px;background:rgba(255,255,255,.6)}
-.sprite{width:100%;aspect-ratio:1;max-width:100%;object-fit:contain;display:block;margin:0 auto;-webkit-user-drag:none;user-select:none}
+.sprite{color:transparent;font-size:0;width:100%;aspect-ratio:1;max-width:100%;object-fit:contain;display:block;margin:0 auto;-webkit-user-drag:none;user-select:none}
 .flip{transform:scaleX(-1)}
 .v-gold{filter:sepia(1) saturate(3.2) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 6px rgba(255,200,40,.9))}
 .v-rainbow{animation:rb 4s linear infinite}
@@ -374,6 +374,8 @@ body{background:radial-gradient(rgba(255,255,255,.4) 1.6px,transparent 2px) 0 0/
 <script src="firebase-config.js"></script>
 <script>
 "use strict";
+// 그림을 img 폴더에서 못 찾으면 저장소 맨 바깥에서 한 번 더 찾아요
+document.addEventListener("error",e=>{const t=e.target;if(t&&t.tagName==="IMG"&&!t.dataset.fb&&t.src.includes("/img/")){t.dataset.fb="1";t.src=t.src.replace("/img/","/")}},true);
 /* ================= 데이터 ================= */
 const SPEED=20;
 const EL={grass:"풀",fire:"불",water:"물",wind:"바람",star:"별"};
