@@ -359,6 +359,9 @@ body{background:radial-gradient(rgba(255,255,255,.4) 1.6px,transparent 2px) 0 0/
 .selbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(80px + env(safe-area-inset-bottom,0px));z-index:7;width:min(528px,calc(100% - 24px));display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--ink);color:#fff;border-radius:18px;padding:10px 12px;box-shadow:0 6px 20px rgba(36,48,94,.35);font-size:14px}
 .selbar b{font-family:var(--display);font-weight:400;font-size:17px}
 .bulkthumbs{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;margin:10px 0}.bulkthumbs div{width:52px;height:52px}
+.tkbuy{margin-top:4px;border:2px solid #fff;background:var(--yolk);color:var(--ink);font-family:var(--display);font-size:12px;border-radius:999px;padding:1px 8px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.tkbig{font-family:var(--display);font-size:18px;color:#fff;background:linear-gradient(135deg,#FF6B6B,#9B6BFF);border:2.5px solid var(--ink);border-radius:10px;padding:8px 16px;box-shadow:0 3px 0 var(--ink);transform:rotate(-4deg)}
+.it.skip{background:radial-gradient(circle at 35% 35%,#B8F1FF,#22A6C8);font-size:10px;letter-spacing:-1px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -406,8 +409,8 @@ const GRADES=[{k:"N",name:"노멀",m:1,c:"#9AA6C6"},{k:"R",name:"레어",m:1.8,c
 const INCS=[{k:"inc0",name:"기본 부화 기계",mult:1,odds:[80,18,2,0]},{k:"inc1",name:"고급 부화 기계",mult:2,odds:[40,45,13,2]},{k:"inc2",name:"황금 부화 기계",mult:4,odds:[0,50,38,12]}];
 const gradeOf2=p=>GRADES[p.g||0];
 const gradeChip=p=>`<span class="gr" style="background:${gradeOf2(p).c}">${gradeOf2(p).k}</span>`;
-const ITEMS={gold:["골드","gold","G"],food:["일반 먹이","food","먹"],prem:["고급 먹이","prem","고"],awaken:["각성석","awaken","각"],trans:["초월석","trans","초"],inc0:["기본 부화 기계","inc0","기"],inc1:["고급 부화 기계","inc1","고"],inc2:["황금 부화 기계","inc2","황"]};
-const PRICE={food:10,prem:100,inc0:50,inc1:500,inc2:5000};
+const ITEMS={gold:["골드","gold","G"],food:["일반 먹이","food","먹"],prem:["고급 먹이","prem","고"],awaken:["각성석","awaken","각"],trans:["초월석","trans","초"],inc0:["기본 부화 기계","inc0","기"],inc1:["고급 부화 기계","inc1","고"],inc2:["황금 부화 기계","inc2","황"],skip:["원정 스킵권","skip","⏩"]};
+const PRICE={food:10,prem:100,inc0:50,inc1:500,inc2:5000,skip:5000};
 const ENH=[{cost:{food:3},p:.9,step:.05,max:1,sulk:0},{cost:{food:6},p:.75,step:.05,max:1,sulk:0},{cost:{prem:5},p:.55,step:.05,max:.9,sulk:0},{cost:{awaken:1,prem:10},p:.35,step:.05,max:.7,sulk:0},{cost:{trans:1,awaken:2},p:.15,step:.03,max:.45,sulk:0}];
 const WORKS=[
  {name:"동네 놀이터",min:0,slots:3,mult:1,cost:0,drop:null,desc:"해츨링부터 일해요"},
@@ -467,7 +470,7 @@ function costChips(c){return Object.entries(c).map(([k,v])=>`<span class="cchip 
 function rewardText(r){return Object.entries(r).filter(([,v])=>v>0).map(([k,v])=>`${ITEMS[k][0]} ${fmt(v)}`).join(", ")}
 
 /* ================= 상태 ================= */
-function freshState(){return {v:2,gold:300,items:{food:10,prem:0,awaken:0,trans:0,inc0:1,inc1:0,inc2:0},pend:{gold:0,awaken:0,trans:0},
+function freshState(){return {v:2,gold:300,items:{food:10,prem:0,awaken:0,trans:0,inc0:1,inc1:0,inc2:0,skip:1},pend:{gold:0,awaken:0,trans:0},
  eggs:[{id:1,egg:"grass"}],pets:[],works:[true,false,false,false,false],exps:{},team:[],cleared:-1,codex:{},album:[],
  daily:{day:"",attended:"",streak:0,m:{enh:0,exp:0,bat:0},claimed:false},weekly:{week:"",best:0,day:"",tries:0,claimed:false},
  nick:"",train:{atk:0,work:0,exp:0},arena:{pts:1000,best:1000,week:"",day:"",tickets:5,w:0,l:0,claimed:false,log:[]},once:{},stats:{totalGold:0,adopted:0,bestStage:-1,wins:0},lastTick:now(),nextId:2,savedAt:0}}
@@ -557,7 +560,7 @@ function tickLive(){
  document.querySelectorAll("[data-rate]").forEach(el=>el.textContent=fmtS(totalRate()/60)+"/초");
 }
 function rollDay(){const t=today();if(S.daily.day!==t){S.daily.day=t;S.daily.m={enh:0,exp:0,bat:0};S.daily.claimed=false}const w=weekKey();if(S.weekly.week!==w)S.weekly={week:w,best:0,day:"",tries:0,claimed:false};if(S.weekly.day!==t){S.weekly.day=t;S.weekly.tries=0}
- const A=S.arena;if(A.week!==w){if(A.week)A.pts=Math.max(1000,Math.floor((A.pts+1000)/2));A.week=w;A.w=0;A.l=0;A.claimed=false;A.best=A.pts}if(A.day!==t){A.day=t;A.tickets=5}}
+ const A=S.arena;if(A.week!==w){if(A.week)A.pts=Math.max(1000,Math.floor((A.pts+1000)/2));A.week=w;A.w=0;A.l=0;A.claimed=false;A.best=A.pts}if(A.day!==t){A.day=t;A.tickets=Math.max(A.tickets,5);A.bought=0}}
 const missionsDone=()=>{const m=S.daily.m;return m.enh>=3&&m.exp>=2&&m.bat>=5};
 function petCard(p,sub){const lk=lookOf(p);
  return `<button class="pc r${p.stage} t-${petEl(p)}" data-pet="${p.id}"><div class="in">
@@ -696,6 +699,12 @@ function medal(i,size=80){const m=MEDAL[i],id="md"+(medalN++),ink="#24305E";
 const tierChip=p=>{const i=tierOf(p),t=TIERS[i];return `<span class="tchip" style="--tc:${t[2]}">${medal(i,20)}<b>${t[0]}</b></span>`};
 let arenaRows=null,opps=null;
 const BOTN=["풀숲 수련생","용암 꼬마 조련사","바닷가 소년","구름 위 탐험가","별 관측 동아리","동네 펫 대장","새벽 훈련단","주말 부화왕","전설 지망생","숲속 지킴이"];
+const TK_MAX=10,tkPrice=()=>Math.round(10000*Math.pow(2,S.arena.bought||0));
+function buyTicket(){const A=S.arena,b=A.bought||0;
+ openModal(`${head("도전권 사기")}<div class="row" style="justify-content:center;margin:14px 0"><span class="tkbig">도전권</span><span class="bigtitle" style="font-size:26px">+1</span></div>
+  <p class="sub" style="text-align:center">${b>=TK_MAX?`오늘은 더 살 수 없어요 (하루 ${TK_MAX}장까지). 내일 다시 와 주세요.`:`가격 ${itIcon("gold")} <b class="mono">${fmt(tkPrice())}</b> · 오늘 ${b}/${TK_MAX}장 샀어요<br>살 때마다 다음 가격이 2배가 돼요. 무료 5장은 매일 다시 채워져요.`}</p>
+  <div class="row" style="justify-content:center;margin-top:12px">${b>=TK_MAX?`<button class="btn white" data-no>닫기</button>`:`<button class="btn lg" data-ok ${S.gold<tkPrice()?"disabled":""}>${S.gold<tkPrice()?"골드가 부족해요":"사기"}</button><button class="btn white" data-no>취소</button>`}</div>`,
+  m=>{m.querySelector("[data-x]").onclick=closeModal;m.querySelector("[data-no]").onclick=closeModal;m.querySelector("[data-ok]")?.addEventListener("click",()=>{if((A.bought||0)>=TK_MAX||!pay({gold:tkPrice()}))return;A.bought=(A.bought||0)+1;A.tickets++;markDirty();render();buyTicket();toast("도전권 1장을 샀어요")})})}
 function myArenaPow(){return teamPets().reduce((t,p)=>t+petPow(p),0)}
 function makeBot(i){const all=Object.keys(SP),target=Math.max(30,myArenaPow()*(.75+Math.random()*.5));const team=[];
  for(let k=0;k<3;k++){const per=target/3*(.85+Math.random()*.3);let st=0;for(let j=0;j<6;j++)if(STAGE_POW[j]<=per)st=j;const sp=all[Math.floor(Math.random()*all.length)];team.push({sp,st,stage:st,v:"normal",g:Math.min(3,Math.floor(Math.random()*2+st/2)),lv:1,pow:Math.round(per)})}
@@ -713,7 +722,7 @@ function arenaView(){
    <div style="flex:1;min-width:0"><div class="sub" style="color:#E6ECFF">이번 주 아레나 점수</div><div class="num mono">${fmt(A.pts)}</div>
     <div class="bar" style="height:9px;margin-top:4px"><i style="width:${nx?Math.min(100,(A.pts-T[1])/(nx[1]-T[1])*100):100}%;background:${T[2]}"></i></div>
     <div class="sub" style="color:#E6ECFF;margin-top:3px">${nx?`${nx[0]}까지 ${fmt(nx[1]-A.pts)}점`:"최고 티어!"} · ${A.w}승 ${A.l}패</div></div>
-   <div class="tickets"><b class="mono">${A.tickets}</b><span>도전권</span></div></div>
+   <div class="tickets"><b class="mono">${A.tickets}</b><span>도전권</span><button class="tkbuy" data-tkbuy aria-label="도전권 사기">+ 사기</button></div></div>
  <div class="card"><div class="spread"><h2 class="h">대전 상대</h2><button class="btn sm white" data-reopp>새 상대 찾기</button></div>
   <p class="sub">상대의 전투 팀과 자동으로 싸워요. 이기면 점수와 보상, 지면 점수가 조금 내려가요. 도전권은 매일 5장.</p>
   ${team.length?"":`<div class="empty" style="margin-top:8px">전투 팀을 먼저 만들어 주세요</div>`}
@@ -758,14 +767,14 @@ function trainList(){
   ${mx?'<span class="pill">최대</span>':`<button class="btn sm" data-train="${t.k}" ${S.gold<trCost(t)?"disabled":""}>${itIcon("gold")}${fmt(trCost(t))}</button>`}</div>`}).join("")}</div>`;
 }
 function expList(){
- return `<p class="sub">원정 간 펫은 돌아올 때까지 일터와 전투에 나갈 수 없어요.</p>
+ return `<div class="spread"><p class="sub" style="flex:1;min-width:180px">원정 간 펫은 돌아올 때까지 일터와 전투에 나갈 수 없어요. 스킵권을 쓰면 바로 돌아와요.</p><span class="pill">${itIcon("skip")} 스킵권 ${have("skip")}장</span></div>
  <div class="list">${EXPS.map((x,i)=>{const e=S.exps[i],p=e&&petById(e.pet);
   const rw=`${ITEMS[x.base[0]][0]} ${x.base[1]}~${x.base[2]} · ${ITEMS[x.bonus[0]][0]} ${Math.round(x.bonus[1]*100)}%${x.extra?` · ${ITEMS[x.extra[0]][0]} ${Math.round(x.extra[1]*100)}%`:""}`;
   const done=e&&e.until<=now();
   return `<div class="li"><div class="thumb">${p?sprite(p.sp,lookOf(p),p.v):`<div class="slot" style="width:58px;height:58px">?</div>`}</div>
    <div class="grow"><div class="t">${x.name} <span class="pill">${STAGES[x.min]}+</span></div><div class="sub">${x.mins>=60?x.mins/60+"시간":x.mins+"분"} · ${rw}</div>
    ${e&&!done?`<div class="bar" style="margin-top:6px;height:10px"><i style="width:${Math.min(100,(1-(e.until-now())/(x.mins*60000))*100)}%;background:var(--sea)"></i></div><div class="sub mono" data-until="${e.until}"></div>`:""}</div>
-   ${e?(done?`<button class="btn sm red" data-claimexp="${i}">보상!</button>`:`<button class="btn sm" disabled>진행 중</button>`):`<button class="btn sm blue" data-sendexp="${i}">보내기</button>`}</div>`}).join("")}</div>`;
+   ${e?(done?`<button class="btn sm red" data-claimexp="${i}">보상!</button>`:`<button class="btn sm blue" data-skipexp="${i}" ${have("skip")<1?"disabled":""}>⏩ 스킵</button>`):`<button class="btn sm blue" data-sendexp="${i}">보내기</button>`}</div>`}).join("")}</div>`;
 }
 
 /* ================= 전투 ================= */
@@ -816,7 +825,7 @@ function shopView(){
    <div class="eggshape egg-${e.k} wobble" style="width:70px;height:88px;margin:8px auto"></div><div class="t">${e.name}</div>
    <div class="sub egn">${e.sp.map(s=>S.codex[s]?SP[s][0]:"???").join(" · ")}</div>
    <button class="btn sm" data-buyegg="${i}" ${S.gold<e.price?"disabled":""}>${itIcon("gold")}${fmt(e.price)}</button></div>`}).join("")}</div>`:""}
- ${shopTab==="mat"?`<p class="sub">각성석과 초월석은 팔지 않아요. 원정, 전투, 출석, 미션, 일터에서 모아요.</p><div class="list">${["food","prem","inc0","inc1","inc2"].map(k=>`<div class="li">${itIcon(k,true)}<div class="grow"><div class="t">${ITEMS[k][0]}</div><div class="sub">보유 ${fmt(have(k))}${k.startsWith("inc")?" · "+(()=>{const I=INCS.find(x=>x.k===k);return GRADES.map((g,j)=>I.odds[j]?`${g.k} ${I.odds[j]}%`:"").filter(Boolean).join(" ")})():""}</div></div>
+ ${shopTab==="mat"?`<p class="sub">각성석과 초월석은 팔지 않아요. 원정, 전투, 출석, 미션, 일터에서 모아요.</p><div class="list">${["food","prem","inc0","inc1","inc2","skip"].map(k=>`<div class="li">${itIcon(k,true)}<div class="grow"><div class="t">${ITEMS[k][0]}</div><div class="sub">보유 ${fmt(have(k))}${k==="skip"?" · 진행 중인 원정을 바로 끝내요":k.startsWith("inc")?" · "+(()=>{const I=INCS.find(x=>x.k===k);return GRADES.map((g,j)=>I.odds[j]?`${g.k} ${I.odds[j]}%`:"").filter(Boolean).join(" ")})():""}</div></div>
    <div class="row"><button class="btn sm white" data-buy="${k}" data-n="1" ${S.gold<PRICE[k]?"disabled":""}>${fmt(PRICE[k])}</button><button class="btn sm" data-buy="${k}" data-n="10" ${S.gold<PRICE[k]*10?"disabled":""}>10개</button></div></div>`).join("")}</div>`:""}
  ${shopTab==="syn"?`<div class="card" style="text-align:center"><div class="row" style="justify-content:center;gap:14px">${itIcon("awaken",true)}<span style="font-family:var(--display);font-size:22px">× 8 →</span>${itIcon("trans",true)}</div>
    <p class="sub" style="margin-top:8px">남는 각성석 8개를 초월석 1개로 바꿔요 (보유 각성석 ${have("awaken")})</p><button class="btn lg" style="margin-top:10px" data-synth ${have("awaken")<8?"disabled":""}>합성하기</button></div>`:""}`;
@@ -1099,8 +1108,8 @@ document.addEventListener("click",e=>{
  if(d.goshop){shopTab=["awaken","trans"].includes(d.goshop)?"syn":"mat";return go("shop")}
  if(t.hasAttribute("data-collect"))return collect(e);
  if(d.goal){const g=d.goal;if(g==="egg"){const b=$("[data-egg]");b?b.scrollIntoView({behavior:"smooth",block:"center"}):go("shop")}else if(g.startsWith("pet:"))petModal(+g.slice(4));else if(g==="adv"){advTab="work";go("adv")}else if(g==="train"){advTab="train";go("adv")}else go(g);return}
- if(d.act==="attend"){if(S.daily.attended===today())return;S.daily.streak=S.daily.attended===yesterday()?S.daily.streak+1:1;S.daily.attended=today();const r={awaken:1,gold:200};if(S.daily.streak%7===0)r.trans=1;give(r);markDirty();render();return showRewards(`출석 ${S.daily.streak}일째`,r,S.daily.streak%7===0?"7일 연속 보너스!":"7일 연속 출석하면 초월석을 받아요")}
- if(d.act==="mission"){if(!missionsDone()||S.daily.claimed)return;const r={awaken:2,gold:500,trans:Math.random()<.1?1:0};give(r);S.daily.claimed=true;markDirty();render();return showRewards("미션 완료!",r)}
+ if(d.act==="attend"){if(S.daily.attended===today())return;S.daily.streak=S.daily.attended===yesterday()?S.daily.streak+1:1;S.daily.attended=today();const r={awaken:1,gold:200,skip:1};if(S.daily.streak%7===0)r.trans=1;give(r);markDirty();render();return showRewards(`출석 ${S.daily.streak}일째`,r,S.daily.streak%7===0?"7일 연속 보너스!":"7일 연속 출석하면 초월석을 받아요")}
+ if(d.act==="mission"){if(!missionsDone()||S.daily.claimed)return;const r={awaken:2,gold:500,skip:2,trans:Math.random()<.1?1:0};give(r);S.daily.claimed=true;markDirty();render();return showRewards("미션 완료!",r)}
  if(d.psort){petSort=d.psort;return render()}
  if(d.pfilter){petFilter=d.pfilter;return render()}
  if(t.hasAttribute("data-mkcode"))return makeSaveCode(t);
@@ -1113,12 +1122,14 @@ document.addEventListener("click",e=>{
  if(d.bmode){bmode=d.bmode;if(bmode==="arena")refreshOpps();return render()}
  if(t.hasAttribute("data-reopp")){refreshOpps();return render()}
  if(d.duel!=null)return duel(+d.duel);
+ if(t.hasAttribute("data-tkbuy"))return buyTicket();
  if(t.hasAttribute("data-aclaim")){const A=S.arena;if(A.claimed||(A.w+A.l)===0)return;const T=TIERS[tierOf(A.best)];give(T[3]);A.claimed=true;markDirty();render();return showRewards(`${T[0]} 티어 보상`,T[3])}
  if(d.train){const t=TRAIN.find(x=>x.k===d.train);if(t&&trLv(t.k)<TRAIN_MAX&&pay({gold:trCost(t)})){S.train[t.k]=trLv(t.k)+1;markDirty();render();toast(`${t.name} Lv.${S.train[t.k]}!`)}return}
  if(t.hasAttribute("data-autowork"))return autoWork();
  if(d.unlock){const i=+d.unlock;if(pay({gold:WORKS[i].cost})){S.works[i]=true;markDirty();render();toast(`${WORKS[i].name}이(가) 열렸어요!`)}return}
  if(d.assign){const i=+d.assign;return pickPet(`${WORKS[i].name}에 배치`,p=>p.work==null&&p.exp==null&&p.stage>=WORKS[i].min,p=>{p.work=i;closeModal();markDirty();render()},p=>`초당 ${fmtS(petInc(p,WORKS[i].mult)/60)}`)}
  if(d.sendexp){const i=+d.sendexp,x=EXPS[i];return pickPet(`${x.name}에 보낼 펫`,p=>p.exp==null&&p.stage>=x.min,p=>{p.work=null;p.exp=i;S.team=S.team.filter(id=>id!==p.id);S.exps[i]={pet:p.id,until:now()+x.mins*60000};S.daily.m.exp++;closeModal();markDirty();render();toast(`${SP[p.sp][0]}이(가) ${x.name}(으)로 떠났어요`)})}
+ if(d.skipexp!=null){const i=+d.skipexp,ex=S.exps[i];if(!ex||ex.until<=now()||have("skip")<1)return;S.items.skip--;ex.until=now();markDirty();render();return toast(`${EXPS[i].name} 원정을 바로 끝냈어요. 보상을 받아요!`)}
  if(d.claimexp){const i=+d.claimexp,x=EXPS[i],ex=S.exps[i];if(!ex||ex.until>now())return;const r={};r[x.base[0]]=Math.round(rnd(x.base[1],x.base[2])*(1+trLv("exp")*.10));if(Math.random()<x.bonus[1])r[x.bonus[0]]=(r[x.bonus[0]]||0)+1;if(x.extra&&Math.random()<x.extra[1])r[x.extra[0]]=(r[x.extra[0]]||0)+1;give(r);const p=petById(ex.pet);if(p)p.exp=null;delete S.exps[i];markDirty();render();return showRewards(`${x.name} 귀환`,r,p?`${SP[p.sp][0]}이(가) 돌아왔어요`:"")}
  if(d.teamslot!=null){const i=+d.teamslot,el=CH[Math.floor(selStage/10)].el;return pickPet("전투 팀에 넣을 펫",p=>p.exp==null,p=>{const cur=teamPets().map(x=>x.id);const at=cur.indexOf(p.id);if(at>=0)cur.splice(at,1);if(i<cur.length)cur[i]=p.id;else cur.push(p.id);S.team=cur.slice(0,3);closeModal();markDirty();render()},p=>`이번 적에게 ${fmt(unitPow(p,el))}`)}
  if(t.hasAttribute("data-autoteam")){S.team=bestTeam(CH[Math.floor(selStage/10)].el);markDirty();render();return toast("이번 적에게 가장 강한 3마리로 편성했어요")}
