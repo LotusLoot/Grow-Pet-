@@ -438,8 +438,9 @@ const GRADES=[{k:"N",name:"노멀",m:1,c:"#9AA6C6"},{k:"R",name:"레어",m:1.8,c
 const INCS=[{k:"inc0",name:"기본 부화 기계",mult:1,odds:[80,18,2,0]},{k:"inc1",name:"고급 부화 기계",mult:2,odds:[40,45,13,2]},{k:"inc2",name:"황금 부화 기계",mult:4,odds:[0,50,38,12]}];
 const gradeOf2=p=>GRADES[p.g||0];
 const gradeChip=p=>`<span class="gr ${gradeOf2(p).k==="UR"?"ur":""}" style="background:${gradeOf2(p).c}">${gradeOf2(p).k}</span>`;
-const LOG_VER=14;
+const LOG_VER=15;
 const UPDATE_LOG=[
+ ["2.4","6챕터 천상 난이도 상승 · 권장 전투력 15만 → 100만","천상 보상 강화 · 골드 20만, 첫 보스 클리어 시 초월석 8 + 변이 프리즘 2"],
  ["2.3","펫 자리 늘리기 · 펫 탭의 +10칸 버튼, 최대 100칸까지"],
  ["2.2","엔드 콘텐츠: 신수의 알 (백호·주작·해태) · 5챕터 보스 클리어 후, 기본 능력 ×2.5","새 속성 신성 · 모든 속성에게 1.25배","6챕터 천상 추가","새 변이 천상 · 황금 부화 기계로만, 수익 ×8 전투력 ×2.5","변이 프리즘 · 펫에게 더 좋은 변이를 붙여요","주간 보스 도전 횟수 제한 삭제"],
  ["2.1","새 알: 요정 알 (빛 속성) · 몽실유니, 꽃잎요정, 무지개나비","빛과 별은 서로에게 1.5배 강해요","도감 19종 완성 업적 추가"],
@@ -478,7 +479,7 @@ const CH=[
  {name:"심해",el:"water",d:1500,e:6000,gold:1500,mat:["prem",2],bossFirst:{awaken:2},rep:.15},
  {name:"하늘",el:"wind",d:5000,e:15000,gold:6000,mat:["prem",4],bossFirst:{awaken:2},rep:.20},
  {name:"별빛",el:"star",d:12000,e:40000,gold:20000,mat:["prem",6],bossFirst:{awaken:3,trans:1},rep:.25},
- {name:"천상",el:"divine",d:50000,e:200000,gold:60000,mat:["prem",8],bossFirst:{awaken:5,trans:5},rep:.3}];
+ {name:"천상",el:"divine",d:150000,e:1000000,gold:200000,mat:["prem",12],bossFirst:{awaken:10,trans:8,prism:2},rep:.4}];
 const LAST=CH.length*10-1;
 const BEATS={water:"fire",fire:"wind",wind:"grass",grass:"water"};
 const WEEK_GRADES=[["C",0,{awaken:1}],["B",50000,{awaken:2}],["A",200000,{awaken:3,trans:1}],["S",1000000,{awaken:5,trans:2,prism:1}],["SS",3000000,{awaken:5,trans:3,prism:2}]];
