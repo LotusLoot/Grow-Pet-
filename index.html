@@ -362,6 +362,14 @@ body{background:radial-gradient(rgba(255,255,255,.4) 1.6px,transparent 2px) 0 0/
 .tkbuy{margin-top:4px;border:2px solid #fff;background:var(--yolk);color:var(--ink);font-family:var(--display);font-size:12px;border-radius:999px;padding:1px 8px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
 .tkbig{font-family:var(--display);font-size:18px;color:#fff;background:linear-gradient(135deg,#FF6B6B,#9B6BFF);border:2.5px solid var(--ink);border-radius:10px;padding:8px 16px;box-shadow:0 3px 0 var(--ink);transform:rotate(-4deg)}
 .it.skip{background:radial-gradient(circle at 35% 35%,#B8F1FF,#22A6C8);font-size:10px;letter-spacing:-1px}
+.gr.ur{box-shadow:0 0 8px #FF9BE0;animation:urg 2s linear infinite;background-size:200% 100%!important}
+@keyframes urg{to{background-position:200% 0}}
+.news{display:grid;gap:10px;margin-top:12px}
+.nv{background:var(--paper2);border:2px solid #C5CDE0;border-radius:14px;padding:10px 12px}
+.nv.latest{border-color:var(--ink);background:#FFF6D6}
+.vtag{font-family:var(--display);font-size:13px;background:var(--ink);color:#fff;border-radius:999px;padding:1px 9px}
+.nv ul{margin:6px 0 0;padding-left:18px;font-size:13.5px}
+.nv li+li{margin-top:2px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head><body>
@@ -405,10 +413,25 @@ const EGG_OF={};EGGS.forEach(e=>e.sp.forEach(s=>EGG_OF[s]=e));
 const STAGES=["해츨링","꼬마","성장기","성체","각성","전설"];
 const STAGE_GOLD=[1,3,8,20,60,200],STAGE_POW=[10,30,80,200,600,2000];
 const VARS={normal:{name:"일반",inc:1,pow:1,cls:""},gold:{name:"황금",inc:2,pow:1.2,cls:"v-gold",rate:.03},rainbow:{name:"무지개",inc:3,pow:1.5,cls:"v-rainbow",rate:.01},shadow:{name:"그림자",inc:5,pow:2,cls:"v-shadow",rate:.002}};
-const GRADES=[{k:"N",name:"노멀",m:1,c:"#9AA6C6"},{k:"R",name:"레어",m:1.8,c:"#3D8BFF"},{k:"SR",name:"에픽",m:3,c:"#9B6BFF"},{k:"SSR",name:"유니크",m:5,c:"#FF8A1F"}];
+const GRADES=[{k:"N",name:"노멀",m:1,c:"#9AA6C6"},{k:"R",name:"레어",m:1.8,c:"#3D8BFF"},{k:"SR",name:"에픽",m:3,c:"#9B6BFF"},{k:"SSR",name:"유니크",m:5,c:"#FF8A1F"},{k:"UR",name:"신화",m:8,c:"linear-gradient(90deg,#FF6B9A,#FFC633,#5ACB7D,#4AA3FF,#A27BFF)"}];
 const INCS=[{k:"inc0",name:"기본 부화 기계",mult:1,odds:[80,18,2,0]},{k:"inc1",name:"고급 부화 기계",mult:2,odds:[40,45,13,2]},{k:"inc2",name:"황금 부화 기계",mult:4,odds:[0,50,38,12]}];
 const gradeOf2=p=>GRADES[p.g||0];
-const gradeChip=p=>`<span class="gr" style="background:${gradeOf2(p).c}">${gradeOf2(p).k}</span>`;
+const gradeChip=p=>`<span class="gr ${gradeOf2(p).k==="UR"?"ur":""}" style="background:${gradeOf2(p).c}">${gradeOf2(p).k}</span>`;
+const LOG_VER=10;
+const UPDATE_LOG=[
+ ["1.9","새 등급 신화(UR) 추가 · 유니크 2마리를 합성해야만 얻을 수 있어요 (수익·전투력 ×8)","업데이트 소식 창 추가"],
+ ["1.8","원정 스킵권 추가 · 출석, 미션, 상점에서 얻어요"],
+ ["1.7","아레나 도전권 구매 · 하루 10장까지, 살 때마다 가격 2배"],
+ ["1.6","여러 마리 한 번에 주인 찾아주기 · 노멀 전부, 해츨링 전부 빠른 선택"],
+ ["1.5","기록 옮기기 코드 · Claude판과 GitHub판 사이에 기록 이동","GitHub판: 8글자 저장 코드, 닉네임"],
+ ["1.4","아레나 · 다른 플레이어 팀과 대전, 주간 티어 보상","티어 훈장 새 디자인"],
+ ["1.3","레벨업, 같은 몬스터 융합, 훈련장 추가"],
+ ["1.2","펫 등급(노멀·레어·에픽·유니크) · 부화 기계가 등급을 정해요","알 가격 300골드로 통일, 처음부터 전부 열림","삐짐 삭제, 수익 초당 표시, 일터 수익 대폭 상향"],
+ ["1.1","화면 대개편 · 정원, 부화·강화 연출, 전투 연출","오프라인 보상, 전투 시선 방향 수정"],
+ ["1.0","펫 부화장 첫 출시 · 16종 몬스터, 일터, 원정, 자동 전투, 도감"]];
+function newsModal(){S.seenLog=LOG_VER;markDirty();renderChrome();
+ openModal(`${head("업데이트 소식")}<div class="news">${UPDATE_LOG.map((u,i)=>`<div class="nv ${i===0?"latest":""}"><span class="vtag">v${u[0]}${i===0?" NEW":""}</span><ul>${u.slice(1).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}</div>`,m=>{m.querySelector("[data-x]").onclick=closeModal})}
+
 const ITEMS={gold:["골드","gold","G"],food:["일반 먹이","food","먹"],prem:["고급 먹이","prem","고"],awaken:["각성석","awaken","각"],trans:["초월석","trans","초"],inc0:["기본 부화 기계","inc0","기"],inc1:["고급 부화 기계","inc1","고"],inc2:["황금 부화 기계","inc2","황"],skip:["원정 스킵권","skip","⏩"]};
 const PRICE={food:10,prem:100,inc0:50,inc1:500,inc2:5000,skip:5000};
 const ENH=[{cost:{food:3},p:.9,step:.05,max:1,sulk:0},{cost:{food:6},p:.75,step:.05,max:1,sulk:0},{cost:{prem:5},p:.55,step:.05,max:.9,sulk:0},{cost:{awaken:1,prem:10},p:.35,step:.05,max:.7,sulk:0},{cost:{trans:1,awaken:2},p:.15,step:.03,max:.45,sulk:0}];
@@ -442,6 +465,7 @@ const MAX_PETS=40;
 
 /* ================= 아이콘 ================= */
 const ICON={
+ news:'<svg viewBox="0 0 24 24" fill="none" stroke="#24305E" stroke-width="2.4" stroke-linejoin="round"><path d="M6 10a6 6 0 0 1 12 0v4l2 3H4l2-3z" fill="#FFC633"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
  pets:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="9" r="2.3"/><circle cx="10" cy="5.5" r="2.3"/><circle cx="14" cy="5.5" r="2.3"/><circle cx="18" cy="9" r="2.3"/><path d="M12 11c-3 0-6 3.5-6 6.3C6 19.4 7.6 20 9 20c1.3 0 2-.6 3-.6s1.7.6 3 .6c1.4 0 3-.6 3-2.7C18 14.5 15 11 12 11z"/></svg>',
  adv:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg>',
@@ -547,7 +571,7 @@ function badges(){const d=S.daily;return{
 function renderChrome(){
  $("#res").innerHTML=["gold","food","prem","awaken","trans"].map(k=>`<button class="rp" data-goshop="${k}" title="${ITEMS[k][0]}">${itIcon(k)}<span data-res="${k}">${fmt(have(k))}</span></button>`).join("");
  const b=badges();
- $("#topbtns").innerHTML=`<button class="ibtn" data-tab="codex" aria-label="도감">${ICON.codex}</button><button class="ibtn" data-tab="rec" aria-label="기록과 랭킹">${ICON.rec}${b.rec?'<span class="dot"></span>':""}</button>`;
+ $("#topbtns").innerHTML=`<button class="ibtn" data-news aria-label="업데이트 소식">${ICON.news}${(S.seenLog||0)<LOG_VER?'<span class="dot"></span>':""}</button><button class="ibtn" data-tab="codex" aria-label="도감">${ICON.codex}</button><button class="ibtn" data-tab="rec" aria-label="기록과 랭킹">${ICON.rec}${b.rec?'<span class="dot"></span>':""}</button>`;
  $("#nav").innerHTML=NAV.map(([k,n])=>`<button data-tab="${k}" ${tab===k?'aria-current="page"':""}>${ICON[k]}${n}${b[k]?'<span class="dot"></span>':""}</button>`).join("");
 }
 function go(t){tab=t;render();window.scrollTo({top:0});const v=$("#view");v.classList.remove("vin");void v.offsetWidth;v.classList.add("vin")}
@@ -894,9 +918,9 @@ function petModal(id,fx){
   <div class="enh lvbox"><div class="spread"><b style="font-family:var(--display);font-weight:400;font-size:18px">레벨 <span class="mono">${p.lv||1}</span><span class="sub"> / ${lvCap(p)}</span></b><span class="sub">레벨마다 전투력 +6% · 수익 +3%</span></div>
    <div class="bar"><i style="width:${(p.lv||1)/lvCap(p)*100}%;background:var(--mint)"></i></div>
    ${(p.lv||1)>=lvCap(p)?`<p class="sub">${p.stage<5?"최고 레벨이에요. 강화하면 최대 레벨이 10 올라가요.":"최고 레벨이에요!"}</p>`:`<div class="row"><button class="btn green" data-lv1 ${S.gold<lvCost(p.lv||1)?"disabled":""}>레벨업 ${itIcon("gold")}${fmt(lvCost(p.lv||1))}</button><button class="btn white" data-lvmax ${S.gold<lvCost(p.lv||1)?"disabled":""}>가능한 만큼</button></div>`}</div>
-  <div class="enh fusebox"><div class="spread"><b style="font-family:var(--display);font-weight:400;font-size:18px">융합 ${gradeChip(p)} → ${p.g>=3?"최고 등급":`<span class="gr" style="background:${GRADES[(p.g||0)+1].c}">${GRADES[(p.g||0)+1].k}</span>`}</b>
-   ${p.g>=3?"":`<button class="btn blue sm" data-fuse ${fuseMats(p).length?"":"disabled"}>재료 고르기 (${fuseMats(p).length})</button>`}</div>
-   <p class="sub">같은 몬스터, 같은 등급 펫 1마리를 합치면 등급이 올라가요. 재료 펫은 사라져요.</p></div>
+  <div class="enh fusebox"><div class="spread"><b style="font-family:var(--display);font-weight:400;font-size:18px">융합 ${gradeChip(p)} → ${p.g>=4?"최고 등급":`<span class="gr" style="background:${GRADES[(p.g||0)+1].c}">${GRADES[(p.g||0)+1].k}</span>`}</b>
+   ${p.g>=4?"":`<button class="btn blue sm" data-fuse ${fuseMats(p).length?"":"disabled"}>재료 고르기 (${fuseMats(p).length})</button>`}</div>
+   <p class="sub">같은 몬스터, 같은 등급 펫 1마리를 합치면 등급이 올라가요. 재료 펫은 사라져요. 유니크 2마리를 합치면 부화로는 못 얻는 <b>신화</b> 등급이 돼요.</p></div>
   <div style="margin-top:12px"><div class="sub" style="margin-bottom:6px">외형 고르기 · 능력치는 그대로예요</div>
    <div class="looks">${STAGES.map((n,i)=>`<button aria-pressed="${lk===i}" data-look="${i}" ${i>p.stage?"disabled":""} title="${n}">${sprite(p.sp,i,p.v,i>p.stage?"sil":"")}</button>`).join("")}</div></div>
   <div class="acts">
@@ -986,7 +1010,7 @@ function pickFuse(p){pickPet(`${SP[p.sp][0]} 융합 재료`,x=>fuseMats(p).inclu
   <p class="sub" style="text-align:center">${esc(SP[x.sp][0])} (${STAGES[x.stage]} · Lv.${x.lv||1})이(가) 사라지고, 등급이 ${GRADES[(p.g||0)+1].name}(으)로 올라가요.</p>
   <div class="row" style="justify-content:center;margin-top:12px"><button class="btn lg red" data-ok>융합하기</button><button class="btn white" data-no>취소</button></div>`,
   m=>{m.querySelector("[data-x]").onclick=()=>petModal(p.id);m.querySelector("[data-no]").onclick=()=>petModal(p.id);m.querySelector("[data-ok]").onclick=()=>{
-   S.pets=S.pets.filter(y=>y.id!==x.id);S.team=S.team.filter(id=>id!==x.id);p.g=Math.min(3,(p.g||0)+1);markDirty();render();
+   S.pets=S.pets.filter(y=>y.id!==x.id);S.team=S.team.filter(id=>id!==x.id);p.g=Math.min(4,(p.g||0)+1);markDirty();render();
    const mm=petModal(p.id,"reveal");const sb=mm.querySelector(".stage-bg");sb&&sb.insertAdjacentHTML("afterbegin",'<div class="rays gold"></div>');mm.insertAdjacentHTML("afterbegin",`<p class="bigtitle">${GRADES[p.g].name} 등급!</p>`)}})},x=>`${STAGES[x.stage]} · Lv.${x.lv||1}`)}
 /* ---- 저장 코드 ---- */
 const CODE_CH="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -1100,6 +1124,7 @@ document.addEventListener("click",e=>{
  if(d.tab){closeModal();return go(d.tab)}
  if(t.closest(".modal"))return;
  if(d.pet&&tab==="pets"&&selMode){const p=petById(+d.pet);if(!p||p.exp!=null)return toast("원정 중인 펫은 보낼 수 없어요");sel.has(p.id)?sel.delete(p.id):sel.add(p.id);return render()}
+ if(t.hasAttribute("data-news"))return newsModal();
  if(d.pet)return petModal(+d.pet);
  if(t.hasAttribute("data-selmode")){selMode=!selMode;sel.clear();return render()}
  if(d.selq){if(d.selq==="c")sel.clear();else S.pets.filter(p=>p.exp==null&&(petFilter==="all"||petEl(p)===petFilter)&&(d.selq==="n"?(p.g||0)===0:p.stage===0)).forEach(p=>sel.add(p.id));return render()}
@@ -1152,7 +1177,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!fighting)closeModa
 /* ================= 시작 ================= */
 function boot(saved){
  if(saved)S=migrate(saved);
- advance(now());rollDay();render();setTimeout(offlineModal,400);
+ advance(now());rollDay();render();setTimeout(()=>{if((S.seenLog||0)<LOG_VER&&S.pets.length&&!$("#modalRoot").innerHTML)newsModal();else offlineModal()},400);
  setInterval(()=>{const off=advance(now());tickLive();if(off)offlineModal();const b=badges();document.querySelectorAll("#nav [data-tab],#topbtns [data-tab]").forEach(el=>{const has=!!b[el.dataset.tab],dot=el.querySelector(".dot");if(has&&!dot)el.insertAdjacentHTML("beforeend",'<span class="dot"></span>');if(!has&&dot)dot.remove()})},1000);
  setInterval(saveLocal,15000);setInterval(()=>{if(dirty)flush()},8000);
  document.addEventListener("visibilitychange",()=>{if(document.hidden){S.savedAt=now();saveLocal();dirty=true;flush()}});
