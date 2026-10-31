@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 내 저장 데이터: 나만 읽고 쓰기
+    match /data/users/{uid}/{doc=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    // 랭킹: 모두 읽기, 내 칸만 쓰기
+    match /ranks/{uid} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 12;
+    }
+    // 아레나 팀: 모두 읽기, 내 칸만 쓰기
+    match /arena/{uid} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.pts is number && request.resource.data.pts <= 10000
+        && request.resource.data.name is string && request.resource.data.name.size() <= 12;
+    }
+  }
+}
