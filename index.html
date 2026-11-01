@@ -508,8 +508,9 @@ const GRADES=[{k:"N",name:"노멀",m:1,c:"#9AA6C6"},{k:"R",name:"레어",m:1.8,c
 const INCS=[{k:"inc0",name:"기본 부화 기계",mult:1,odds:[80,18,2,0]},{k:"inc1",name:"고급 부화 기계",mult:2,odds:[40,45,13,2]},{k:"inc2",name:"황금 부화 기계",mult:4,odds:[0,50,38,12]},{k:"inc3",name:"천상 부화 기계",mult:8,odds:[0,0,55,45]}];
 const gradeOf2=p=>GRADES[p.g||0];
 const gradeChip=p=>`<span class="gr ${gradeOf2(p).k==="UR"?"ur":""}" style="background:${gradeOf2(p).c}">${gradeOf2(p).k}</span>`;
-const LOG_VER=25;
+const LOG_VER=26;
 const UPDATE_LOG=[
+ ["3.5","🔊 효과음 추가! 버튼, 알 깨기, 부화, 강화, 전투, 보상, 수익 받기","특별한 펫(노바·월광 늑대)이 태어나면 더 웅장한 소리","오른쪽 위 스피커 버튼으로 켜고 끌 수 있어요"],
  ["3.4","🌕 월광 늑대 강화! 기본 능력 ×7 → ×10","「달의 포효」 단계마다 팀 전투력 +12% → +15% (전설 +90%, 탑에서는 2배)","전설이 되면 상대 전투력 -15%, 전투 보상 ×1.3 추가"],
  ["3.3","🌙 엔드 콘텐츠 3탄: 달밤 알 · 7챕터 은하 보스 클리어 후, 800만 골드 + 초월석 8, 기본 능력 ×5","새 속성 달: 우주에게 1.5배, 나머지에게 1.3배","졸린 부엉냥 「밤샘 근무」 밤 9시~아침 6시 일터 수익 +50~100% · 별사탕 고슴도치 「별가시」 탑 전투력 +30~50% · 달토끼 떡 「떡방아」 매일 각성석 3개 (전설은 초월석 +1)","🌕 달밤 알 5개를 합치면 월광 알! 최강 펫 월광 늑대 확정 (기본 능력 ×7) · 스킬 「달의 포효」 항상 발동, 단계마다 팀 전투력 +12%, 탑에서는 2배"],
  ["3.2","🗼 무한의 탑 (전투 → 무한의 탑) · 한 층씩 오르는 도전, 층마다 속성이 바뀌고 10층마다 보스 · 첫 돌파 보상, 랭킹에 탑 기록","🏅 업적·칭호 (기록 → 업적·칭호) · 업적 16개 추가, 업적을 깨면 칭호를 받아 랭킹·아레나·친구 목록에 달 수 있어요","🤝 친구 (기록 → 친구) · 친구 코드로 추가, 하루 1번 선물 주고받기, 친구의 가장 강한 펫을 빌려 전투 5번 함께 싸우기"],
@@ -744,10 +745,34 @@ function badges(){const d=S.daily;return{
  adv:Object.values(S.exps).some(e=>e.until<=now()),
  rec:ONCE.some(o=>!S.once[o[0]]&&o[3](S)),
  battle:teamPets().length>0&&(S.arena.tickets>0||teamPets().length>0)}}
+/* ================= 효과음 ================= */
+let AC=null,MUTE=false;try{MUTE=localStorage.getItem("pet-sfx-mute")==="1"}catch(e){}
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return null}}if(AC.state==="suspended")AC.resume();return AC}
+function tn(f,d,o={}){const c=ac();if(!c)return;const t=c.currentTime+(o.at||0),g=c.createGain(),os=c.createOscillator();os.type=o.type||"triangle";os.frequency.setValueAtTime(f,t);if(o.to)os.frequency.exponentialRampToValueAtTime(o.to,t+d);
+ const v=(o.v||.2)*.6;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(v,t+Math.min(.015,d/4));g.gain.exponentialRampToValueAtTime(0.0001,t+d);os.connect(g).connect(c.destination);os.start(t);os.stop(t+d+.02)}
+function nz(d,o={}){const c=ac();if(!c)return;const t=c.currentTime+(o.at||0),n=Math.floor(c.sampleRate*d),b=c.createBuffer(1,n,c.sampleRate),a=b.getChannelData(0);for(let i=0;i<n;i++)a[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);
+ const src=c.createBufferSource();src.buffer=b;const fl=c.createBiquadFilter();fl.type=o.ft||"bandpass";fl.frequency.value=o.f||1200;const g=c.createGain();g.gain.value=(o.v||.3)*.6;src.connect(fl).connect(g).connect(c.destination);src.start(t)}
+const NOTE=n=>440*Math.pow(2,(n-69)/12);
+const SFXS={
+ tap:()=>tn(880,.05,{v:.06,to:660}),
+ crack:()=>{nz(.09,{f:2400,v:.35});tn(320,.06,{type:"square",v:.05,to:180})},
+ reveal:()=>[72,76,79,84].forEach((n,i)=>tn(NOTE(n),.18,{at:i*.07,v:.14})),
+ fanfare:()=>{[67,72,76,79,84].forEach((n,i)=>tn(NOTE(n),.16,{at:i*.07,v:.14}));[72,76,79,84].forEach(n=>tn(NOTE(n),.7,{at:.38,v:.08,type:"square"}));nz(.5,{at:.38,f:6000,ft:"highpass",v:.08})},
+ legend:()=>{tn(70,1.2,{type:"sine",v:.4,to:40});nz(.8,{f:300,ft:"lowpass",v:.35});tn(200,.9,{at:.15,type:"sawtooth",v:.06,to:1600});[60,64,67,72,76,79,84,88].forEach((n,i)=>tn(NOTE(n),.25,{at:.6+i*.06,v:.12}));[72,76,79,84].forEach(n=>tn(NOTE(n),1.3,{at:1.1,v:.07,type:"square"}));nz(1.2,{at:1.1,f:7000,ft:"highpass",v:.07})},
+ hit:()=>{nz(.07,{f:900,v:.3});tn(190,.08,{type:"square",v:.06,to:90})},
+ reward:()=>[79,84,88,91].forEach((n,i)=>tn(NOTE(n),.15,{at:i*.06,v:.12})),
+ win:()=>{[72,76,79].forEach((n,i)=>tn(NOTE(n),.14,{at:i*.09,v:.13}));tn(NOTE(84),.45,{at:.3,v:.14,type:"square"})},
+ lose:()=>[67,63,60,55].forEach((n,i)=>tn(NOTE(n),.24,{at:i*.16,v:.11,type:"sawtooth"})),
+ charge:()=>{tn(220,.9,{type:"sawtooth",v:.05,to:880});nz(.9,{f:2000,v:.05})},
+ levelup:()=>{[72,79,84,88,91,96].forEach((n,i)=>tn(NOTE(n),.2,{at:i*.06,v:.13}));nz(.6,{at:.3,f:8000,ft:"highpass",v:.07})},
+ fail:()=>{tn(160,.35,{type:"square",v:.08,to:70});nz(.15,{f:400,ft:"lowpass",v:.25})},
+ coin:()=>{tn(1318,.08,{v:.12,type:"square"});tn(1760,.22,{at:.07,v:.12,type:"square"})},
+ fuse:()=>{tn(300,.6,{type:"sine",v:.2,to:1200});[76,81,88].forEach((n,i)=>tn(NOTE(n),.3,{at:.5+i*.08,v:.12}))}};
+function sfx(k){if(MUTE)return;try{SFXS[k]&&SFXS[k]()}catch(e){}}
 function renderChrome(){
  $("#res").innerHTML=["gold","food","prem","awaken","trans",...(evOn()?["candy"]:[])].map(k=>`<button class="rp" data-goshop="${k}" title="${ITEMS[k][0]}">${itIcon(k)}<span data-res="${k}">${fmt(have(k))}</span></button>`).join("");
  const b=badges();
- $("#topbtns").innerHTML=`<button class="ibtn" data-news aria-label="업데이트 소식">${ICON.news}${(S.seenLog||0)<LOG_VER?'<span class="dot"></span>':""}</button><button class="ibtn" data-tab="codex" aria-label="도감">${ICON.codex}</button><button class="ibtn" data-tab="rec" aria-label="기록과 랭킹">${ICON.rec}${b.rec?'<span class="dot"></span>':""}</button>`;
+ $("#topbtns").innerHTML=`<button class="ibtn" data-mute aria-label="효과음 켜고 끄기" style="font-size:18px">${MUTE?"🔇":"🔊"}</button><button class="ibtn" data-news aria-label="업데이트 소식">${ICON.news}${(S.seenLog||0)<LOG_VER?'<span class="dot"></span>':""}</button><button class="ibtn" data-tab="codex" aria-label="도감">${ICON.codex}</button><button class="ibtn" data-tab="rec" aria-label="기록과 랭킹">${ICON.rec}${b.rec?'<span class="dot"></span>':""}</button>`;
  $("#nav").innerHTML=NAV.map(([k,n])=>`<button data-tab="${k}" ${tab===k?'aria-current="page"':""}>${ICON[k]}${n}${b[k]?'<span class="dot"></span>':""}</button>`).join("");
 }
 function go(t){tab=t;render();window.scrollTo({top:0});const v=$("#view");v.classList.remove("vin");void v.offsetWidth;v.classList.add("vin")}
@@ -820,7 +845,7 @@ function startScene(){
   const wk=ws.filter(x=>{const q=petById(+x.dataset.pet);return q&&q.work!=null&&!sulking(q)});
   if(wk.length){const x=wk[Math.floor(Math.random()*wk.length)],q=petById(+x.dataset.pet);const n=document.createElement("span");n.className="pop";n.innerHTML=`${itIcon("gold")}+${fmtS(petInc(q,WORKS[q.work].mult)/60)}`;x.appendChild(n);setTimeout(()=>n.remove(),1200)}},1300);
 }
-function collect(ev){
+function collect(ev){sfx("coin");
  const r={gold:Math.floor(S.pend.gold),awaken:S.pend.awaken,trans:S.pend.trans};if(!r.gold&&!r.awaken&&!r.trans)return;
  give(r);S.pend={gold:S.pend.gold-r.gold,awaken:0,trans:0,secs:0};markDirty();
  const b=ev&&ev.target&&ev.target.closest("button");if(b){const rc=b.getBoundingClientRect();for(let i=0;i<6;i++){const c=document.createElement("div");c.className="coinfly";c.style.left=(rc.left+rc.width/2-11+rnd(-50,50))+"px";c.style.top=(rc.top+rnd(-4,12))+"px";c.style.animationDelay=i*60+"ms";c.innerHTML=itIcon("gold");document.body.appendChild(c);setTimeout(()=>c.remove(),1300)}}
@@ -963,12 +988,12 @@ async function duel(i){
   <div id="dres"></div>`);
  const ours=[...m.querySelectorAll("#ours .unit")].map(el=>({el,hp:1})),fz=[...m.querySelectorAll("#foes .unit")].map(el=>({el,hp:1}));
  const turns=5,endO=win?Math.max(.15,1-op/mp*.7):0,endF=win?0:Math.max(.1,1-mp/op*.9);
- const hit=async(att,def,amt,cls,shown)=>{const a=att.filter(u=>u.hp>.001);if(!a.length)return;const u=a[Math.floor(Math.random()*a.length)];u.el.classList.add(cls);await sleep(170);u.el.classList.remove(cls);
+ const hit=async(att,def,amt,cls,shown)=>{const a=att.filter(u=>u.hp>.001);if(!a.length)return;const u=a[Math.floor(Math.random()*a.length)];u.el.classList.add(cls);sfx("hit");await sleep(170);u.el.classList.remove(cls);
   let left=amt,first=null;for(const x of def){if(left<=0)break;if(x.hp<=.001)continue;first=first||x;const d=Math.min(x.hp,left);x.hp-=d;left-=d;x.el.querySelector(".hp i").style.width=Math.max(0,x.hp*100)+"%";x.el.classList.remove("hurt");void x.el.offsetWidth;x.el.classList.add("hurt");if(x.hp<=.001)x.el.classList.add("dead")}
   if(first){const n=document.createElement("div");n.className="dmg";n.textContent=fmt(shown);first.el.appendChild(n);setTimeout(()=>n.remove(),800)}};
  for(let k=0;k<turns;k++){await hit(ours,fz,(1-endF)*fz.length/turns,"lungeR",mp/turns*(.85+Math.random()*.3));await sleep(200);await hit(fz,ours,(1-endO)*ours.length/turns,"lungeL",op/turns*(.85+Math.random()*.3));await sleep(200)}
  const d=win?Math.round(Math.max(10,Math.min(40,Math.round(20+(o.pts-A.pts)/20)))*(1+dm.arena)):-Math.max(5,Math.min(25,Math.round(15+(A.pts-o.pts)/30)));
- A.pts=Math.max(0,A.pts+d);A.best=Math.max(A.best,A.pts);if(win)A.w++;else A.l++;S.daily.m.bat++;
+ sfx(win?"win":"lose");A.pts=Math.max(0,A.pts+d);A.best=Math.max(A.best,A.pts);if(win)A.w++;else A.l++;S.daily.m.bat++;
  A.log.unshift({name:o.name,win,d,at:now()});A.log=A.log.slice(0,10);
  const ti=tierOf(A.pts);const r=win?{gold:1000*(ti+1),awaken:Math.random()<.15?1:0}:{gold:200};give(r);
  opps.splice(i,1,makeBot(9));if(win)gearToast(dropGear([50,35,13,2],.12));markDirty();lastRankWrite=0;fighting=false;
@@ -1152,10 +1177,10 @@ function rankTable(){
 const VIEWS={event:eventView,home:homeView,pets:petsView,adv:advView,battle:battleView,shop:shopView,codex:codexView,rec:recView};
 
 /* ================= 모달 ================= */
-function openModal(html,bind){const r=$("#modalRoot");r.innerHTML=`<div class="scrim" data-scrim><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;const m=r.querySelector(".modal");bind&&bind(m);(m.querySelector("[data-ok]")||m.querySelector(".x"))?.focus({preventScroll:true});return m}
+function openModal(html,bind){if(html.includes('bigtitle lose">패배'))sfx("lose");const r=$("#modalRoot");r.innerHTML=`<div class="scrim" data-scrim><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;const m=r.querySelector(".modal");bind&&bind(m);(m.querySelector("[data-ok]")||m.querySelector(".x"))?.focus({preventScroll:true});return m}
 function closeModal(){$("#modalRoot").innerHTML=""}
 const head=t=>`<div class="mhead"><h3 class="h">${t}</h3><button class="x" data-x aria-label="닫기">×</button></div>`;
-function showRewards(title,r,sub,after){
+function showRewards(title,r,sub,after){sfx(/승리|돌파/.test(title)?"win":"reward");
  const items=Object.entries(r).filter(([,v])=>v>0);
  return openModal(`<p class="bigtitle">${title}</p>${sub?`<p class="sub" style="text-align:center">${sub}</p>`:""}
   <div class="reward">${items.map(([k,v],i)=>`<div class="rt" style="animation-delay:${i*90}ms">${itIcon(k,true)}<b>${fmt(v)}</b><span class="n">${ITEMS[k][0]}</span></div>`).join("")||'<span class="sub">보상 없음</span>'}</div>
@@ -1242,8 +1267,8 @@ async function doHatch(e,E,I){
  if(S.pets.filter(x=>x.work===0).length<WORKS[0].slots)p.work=0;
  markDirty();
  const m=openModal(`<div class="stage-bg" style="height:260px" id="hs"><div class="eggshape egg-${e.egg} crack" id="hegg" style="width:110px;height:138px"></div></div><div id="hres"></div>`);
- await sleep(720);const egg=$("#hegg");if(!egg)return;egg.classList.remove("crack");void egg.offsetWidth;egg.classList.add("crack");await sleep(650);
- const hs=$("#hs");if(!hs)return;
+ sfx("crack");await sleep(720);const egg=$("#hegg");if(!egg)return;sfx("crack");egg.classList.remove("crack");void egg.offsetWidth;egg.classList.add("crack");await sleep(650);
+ const hs=$("#hs");if(!hs)return;sfx(sp==="nova"||sp==="wolf"?"legend":gi>=2||v!=="normal"?"fanfare":"reveal");
  hs.innerHTML=`<div class="flash"></div><div class="rays ${v!=="normal"?v:gi>=2?"gold":""}"></div>${isNew?'<span class="new">NEW</span>':""}<span class="grbig" style="background:${GRADES[gi].c}">${GRADES[gi].k} ${GRADES[gi].name}</span><div class="hero reveal">${sprite(sp,0,v)}</div>`;
  if(sp==="wolf"){hs.classList.add("moonfx");document.body.insertAdjacentHTML("beforeend",'<div class="novascreen moonscreen"><b>🌕 월광 늑대 🌕</b></div>');setTimeout(()=>document.querySelector(".novascreen")?.remove(),2800)}
  if(sp==="nova"){hs.classList.add("novafx");document.body.insertAdjacentHTML("beforeend",'<div class="novascreen"><b>★ 창세의 고래 ★</b></div>');setTimeout(()=>document.querySelector(".novascreen")?.remove(),2800)}
@@ -1256,8 +1281,8 @@ async function doEnhance(p){
  const rate=Math.min(E.max,E.p+(p.fails||0)*E.step),ok=Math.random()<rate;
  const enh=$("#enh"),hero=$("#hero");
  if(enh)enh.innerHTML=`<b style="font-family:var(--display);font-weight:400;font-size:18px;text-align:center">강화 중...</b><div class="gauge"><i></i></div>`;
- if(hero)hero.classList.add("glow");
- await sleep(950);
+ if(hero)hero.classList.add("glow");sfx("charge");
+ await sleep(950);sfx(ok?"levelup":"fail");
  if(ok){p.stage++;p.fails=0;if((p.look??p.stage-1)===p.stage-1)p.look=p.stage;note(p);markDirty();render();
   const m=petModal(p.id,"reveal");const sb=m.querySelector(".stage-bg");if(sb&&!sb.querySelector(".rays"))sb.insertAdjacentHTML("afterbegin",'<div class="rays"></div>');
   m.insertAdjacentHTML("afterbegin",`<p class="bigtitle">성공! ${STAGES[p.stage]}</p>`);
@@ -1353,7 +1378,7 @@ async function doBulkHatch(mode){
  if(!got.length){toast("부화 기계나 펫 자리가 부족해요");return}
  S.daily.m.enh+=0;markDirty();
  const m=openModal(`<div class="stage-bg" style="height:200px" id="bhs">${S.eggs.length+got.length>0?got.slice(0,8).map((p,i)=>`<div class="eggshape egg-${SP[p.sp][1]} crack" style="position:absolute;left:${8+i*11}%;top:${30+(i%2)*30}%;width:44px;height:56px;animation-delay:${i*60}ms"></div>`).join(""):""}</div><div id="bhr"></div>`);
- await sleep(900);const hs=$("#bhs");if(!hs)return;
+ sfx("crack");await sleep(900);const hs=$("#bhs");if(!hs)return;sfx(got.some(p=>p.sp==="nova"||p.sp==="wolf")?"legend":"fanfare");
  got.sort((a,b)=>(b.g||0)-(a.g||0)||(b.v!=="normal")-(a.v!=="normal"));const best=got[0];
  hs.innerHTML=`<div class="flash"></div><div class="rays ${(best.g||0)>=2||best.v!=="normal"?"gold":""}"></div><div class="hero reveal" style="width:150px">${sprite(best.sp,0,best.v)}</div><span class="grbig" style="background:${GRADES[best.g||0].c}">최고 ${GRADES[best.g||0].k} ${GRADES[best.g||0].name}</span>`;
  const sum=GRADES.map((g,i)=>[g,got.filter(p=>(p.g||0)===i).length]).filter(x=>x[1]).reverse();
@@ -1460,7 +1485,7 @@ async function battleAnim(tp,rec,win){
  const lossOurs=(1-endOurs)*ours.length/turns,lossFoes=(1-endFoes)*fz.length/turns;
  const strike=async(att,def,amt,cls,shown)=>{
   const a=att.filter(u=>u.hp>0.001);if(!a.length||!def.some(u=>u.hp>0.001))return;
-  const u=a[Math.floor(Math.random()*a.length)];u.el.classList.add(cls);await wait(180);u.el.classList.remove(cls);
+  const u=a[Math.floor(Math.random()*a.length)];u.el.classList.add(cls);sfx("hit");await wait(180);u.el.classList.remove(cls);
   let left=amt,first=null;for(const x of def){if(left<=0)break;if(x.hp<=0.001)continue;first=first||x;const d=Math.min(x.hp,left);x.hp-=d;left-=d;
    x.el.querySelector(".hp i").style.width=Math.max(0,x.hp*100)+"%";x.el.classList.remove("hurt");void x.el.offsetWidth;x.el.classList.add("hurt");if(x.hp<=0.001)x.el.classList.add("dead")}
   if(first){const n=document.createElement("div");n.className="dmg";n.textContent=fmt(shown);first.el.appendChild(n);setTimeout(()=>n.remove(),800)}};
@@ -1501,6 +1526,8 @@ async function weeklyFight(){
 document.addEventListener("click",e=>{
  const sc=e.target.closest("[data-scrim]");if(sc&&e.target===sc){closeModal();return}
  const t=e.target.closest("button");if(!t||t.disabled)return;const d=t.dataset;
+ if(t.hasAttribute("data-mute")){MUTE=!MUTE;try{localStorage.setItem("pet-sfx-mute",MUTE?"1":"0")}catch(e){}renderChrome();if(!MUTE)sfx("coin");return toast(MUTE?"효과음을 껐어요":"효과음을 켰어요")}
+ sfx("tap");
  if(d.tab){closeModal();return go(d.tab)}
  if(t.closest(".modal"))return;
  if(d.pet&&tab==="pets"&&selMode){const p=petById(+d.pet);if(!p||p.exp!=null)return toast("원정 중인 펫은 보낼 수 없어요");sel.has(p.id)?sel.delete(p.id):sel.add(p.id);return render()}
@@ -1508,7 +1535,7 @@ document.addEventListener("click",e=>{
  if(d.rtab){recTab=d.rtab;return render()}
  if(d.title!=null&&tab==="rec"){if(d.title&&!ONCE.some(o=>o[4]===d.title&&S.once[o[0]]))return;S.title=d.title;markDirty();lastRankWrite=0;render();return toast(d.title?`칭호 「${d.title}」를 달았어요`:"칭호를 뗐어요")}
  if(t.hasAttribute("data-tfight"))return towerFight();
- if(t.hasAttribute("data-moonfuse")){const me=S.eggs.filter(x=>x.egg==="moon");if(me.length<5)return;const used=new Set(me.slice(0,5));S.eggs=S.eggs.filter(x=>!used.has(x));S.eggs.push({id:S.nextId++,egg:"moonfull"});markDirty();render();
+ if(t.hasAttribute("data-moonfuse")){sfx("fuse");const me=S.eggs.filter(x=>x.egg==="moon");if(me.length<5)return;const used=new Set(me.slice(0,5));S.eggs=S.eggs.filter(x=>!used.has(x));S.eggs.push({id:S.nextId++,egg:"moonfull"});markDirty();render();
   return openModal(`<div class="stage-bg moonfx" style="height:220px"><div class="eggshape egg-moonfull wobble" style="width:104px;height:130px"></div></div><p class="bigtitle">🌕 월광 알 완성!</p><p class="sub" style="text-align:center">달밤 알 5개가 하나로 합쳐졌어요.<br>이 알에서는 <b>월광 늑대</b>가 반드시 태어나요. 좋은 부화 기계로 까 보세요!</p><div class="row" style="justify-content:center;margin-top:12px"><button class="btn lg" data-ok>확인</button></div>`,m=>m.querySelector("[data-ok]").onclick=closeModal)}
  if(t.hasAttribute("data-tauto")){S.team=bestTeam(towerEl(S.tower.best+1));markDirty();render();return toast("이 층에 가장 강한 3마리로 편성했어요")}
  if(t.hasAttribute("data-fcopy")){const c=myCode();try{navigator.clipboard.writeText(c)}catch(e){}return toast(`친구 코드 ${c} 복사했어요`)}
