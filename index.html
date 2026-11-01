@@ -422,6 +422,8 @@ body{background:radial-gradient(rgba(255,255,255,.4) 1.6px,transparent 2px) 0 0/
 .gicon{flex:none;display:block}
 .gli .row .btn{white-space:nowrap}
 .seg button small{background:var(--coral);color:#fff;border-radius:999px;padding:0 6px;font-size:11px}
+.ttl{display:inline-block;font-size:11px;font-family:var(--display);background:linear-gradient(90deg,#FFE27A,#FFB347);color:#5A3A00;border-radius:8px;padding:1px 7px;margin-left:4px;border:1.5px solid #24305E;white-space:nowrap;vertical-align:middle}
+.unit.helper::after{content:"🤝";position:absolute;top:-8px;left:-2px;font-size:16px}
 .el-yokai{background:linear-gradient(135deg,#DC2626,#0EA5A4)}.egg-yokai{background:radial-gradient(circle at 35% 35%,#FFE4D6,#F2734F 50%,#2A9D9B)}.egg-yokai::after{background:radial-gradient(circle,#7FFFE9 0 3px,transparent 4px) 0 0/14px 12px;height:24px;top:28%;opacity:.8}.t-yokai{--tint:#E3F7F4;--tint2:#9FDCD4}.ar-yokai{--abg1:#1F3B46;--abg2:#3E2A4F}
 .el-sweet{background:#FF8FB8}.egg-sweet{background:radial-gradient(circle at 35% 35%,#FFF0F6,#FFB8D2 50%,#B8E6FF)}
 .egg-sweet::after{background:repeating-linear-gradient(90deg,#fff 0 5px,#FF8FB8 5px 10px)}
@@ -499,8 +501,9 @@ const GRADES=[{k:"N",name:"노멀",m:1,c:"#9AA6C6"},{k:"R",name:"레어",m:1.8,c
 const INCS=[{k:"inc0",name:"기본 부화 기계",mult:1,odds:[80,18,2,0]},{k:"inc1",name:"고급 부화 기계",mult:2,odds:[40,45,13,2]},{k:"inc2",name:"황금 부화 기계",mult:4,odds:[0,50,38,12]},{k:"inc3",name:"천상 부화 기계",mult:8,odds:[0,0,55,45]}];
 const gradeOf2=p=>GRADES[p.g||0];
 const gradeChip=p=>`<span class="gr ${gradeOf2(p).k==="UR"?"ur":""}" style="background:${gradeOf2(p).c}">${gradeOf2(p).k}</span>`;
-const LOG_VER=22;
+const LOG_VER=23;
 const UPDATE_LOG=[
+ ["3.2","🗼 무한의 탑 (전투 → 무한의 탑) · 한 층씩 오르는 도전, 층마다 속성이 바뀌고 10층마다 보스 · 첫 돌파 보상, 랭킹에 탑 기록","🏅 업적·칭호 (기록 → 업적·칭호) · 업적 16개 추가, 업적을 깨면 칭호를 받아 랭킹·아레나·친구 목록에 달 수 있어요","🤝 친구 (기록 → 친구) · 친구 코드로 추가, 하루 1번 선물 주고받기, 친구의 가장 강한 펫을 빌려 전투 5번 함께 싸우기"],
  ["3.1","새 알: 👹 요괴 알 (요괴 속성 · 10만 골드 · 기본 능력 ×1.8) · 꼬마도깨비, 불가사리, 도깨비불","요괴는 빛에 약해요 (빛 → 요괴 1.5배)","꼬마도깨비 「금 나와라 뚝딱」 승리 시 20~35% 확률로 골드 ×5 · 불가사리 「쇠 먹기」 장비 강화 비용 -30~50% · 도깨비불 「홀림불」 아레나 승리 점수 ×1.5~2"],
  ["3.0","쿠폰 전용 몬스터 너구링 (신화 UR) 추가","너구링 스킬 「반짝이 줍줍」 · 원정 보상 ×1.5~2, 장비 확률 2배"],
  ["2.9","새 부화 기계: 천상 부화 기계 (10만 골드) · 에픽 55% · 유니크 45%, 노멀·레어가 안 나와요","변이 확률 8배, 천상 변이도 나와요 · 우주 알에서 노바 확률 10%"],
@@ -558,6 +561,15 @@ const ONCE=[
  ["vgold","황금 변이 첫 발견",{awaken:2},s=>hasVar(s,"gold")],["vrainbow","무지개 변이 첫 발견",{awaken:2},s=>hasVar(s,"rainbow")],["vshadow","그림자 변이 첫 발견",{awaken:2},s=>hasVar(s,"shadow")],
  ["allwork","일터 5곳 모두 해금",{awaken:5,trans:1},s=>s.works.every(Boolean)],
  ...CH.map((c,i)=>["ch"+i,`챕터 ${i+1} ${c.name} 클리어`,{awaken:2},s=>s.cleared>=i*10+9])];
+const OTITLE={codex8:"초보 수집가",codex16:"도감 박사",codexAll:"살아있는 도감",firstLeg:"전설의 조련사",vrainbow:"무지개 사냥꾼",vshadow:"그림자 추적자",allwork:"일 잘하는 사장님",ch6:"은하 정복자"};
+ONCE.forEach(o=>{if(OTITLE[o[0]])o[4]=OTITLE[o[0]]});
+ONCE.push(["vceles","천상 변이 첫 발견",{trans:2},s=>hasVar(s,"celestial"),"하늘이 내린 자"],["nova","노바 부화",{trans:3},s=>!!s.codex.nova,"빅뱅의 주인"],["ur","신화(UR) 펫 보유",{trans:2},s=>s.pets.some(p=>p.g===4),"신화 수집가"],
+ ["leg10","전설 펫 10마리",{trans:3},s=>s.pets.filter(p=>p.stage===5).length>=10,"전설 군단"],["adopt50","펫 50마리 주인 찾아주기",{awaken:5},s=>s.stats.adopted>=50,"따뜻한 마음"],
+ ["gold1e8","누적 골드 1억",{awaken:5},s=>s.stats.totalGold>=1e8,"부자"],["gold1e10","누적 골드 100억",{trans:5},s=>s.stats.totalGold>=1e10,"재벌"],["win1000","전투 1,000승",{awaken:5,trans:1},s=>s.stats.wins>=1000,"백전노장"],
+ ["arenaG","아레나 골드 달성",{awaken:3},s=>s.arena.best>=1250,"아레나 강자"],["arenaM","아레나 마스터 달성",{trans:3},s=>s.arena.best>=1700,"아레나 챔피언"],
+ ["tw10","무한의 탑 10층",{awaken:3},s=>s.tower.best>=10,"탑 등반가"],["tw30","무한의 탑 30층",{awaken:5,trans:1},s=>s.tower.best>=30,"구름 위 산책자"],["tw50","무한의 탑 50층",{trans:3,prism:1},s=>s.tower.best>=50,"하늘탑 정복자"],["tw100","무한의 탑 100층",{trans:10,prism:3},s=>s.tower.best>=100,"무한의 지배자"],
+ ["fr3","친구 3명 추가",{gold:10000},s=>s.friends.length>=3,"인싸"],["gift20","친구에게 선물 20번 보내기",{awaken:3},s=>(s.stats.gifts||0)>=20,"선물 요정"]);
+const ttlChip=t=>t?`<span class="ttl">${esc(t)}</span>`:"";
 const SLOT_BASE=40,SLOT_MAXUP=6;
 const maxPets=()=>SLOT_BASE+((S&&S.slots)||0)*10;
 const slotCost=()=>Math.round(50000*Math.pow(2,(S.slots||0)));
@@ -597,7 +609,7 @@ function rewardText(r){return Object.entries(r).filter(([,v])=>v>0).map(([k,v])=
 function freshState(){return {v:2,gold:300,items:{food:10,prem:0,awaken:0,trans:0,inc0:1,inc1:0,inc2:0,inc3:0,skip:1},pend:{gold:0,awaken:0,trans:0},
  eggs:[{id:1,egg:"grass"}],pets:[],works:[true,false,false,false,false],exps:{},team:[],cleared:-1,codex:{},album:[],
  daily:{day:"",attended:"",streak:0,m:{enh:0,exp:0,bat:0},claimed:false},weekly:{week:"",best:0,day:"",tries:0,claimed:false},
- nick:"",train:{atk:0,work:0,exp:0},gear:[],event:{dmg:0,hits:0,total:0,day:"",claimed:{}},arena:{pts:1000,best:1000,week:"",day:"",tickets:5,w:0,l:0,claimed:false,log:[]},once:{},stats:{totalGold:0,adopted:0,bestStage:-1,wins:0},lastTick:now(),nextId:2,savedAt:0}}
+ nick:"",train:{atk:0,work:0,exp:0},gear:[],event:{dmg:0,hits:0,total:0,day:"",claimed:{}},arena:{pts:1000,best:1000,week:"",day:"",tickets:5,w:0,l:0,claimed:false,log:[]},once:{},stats:{totalGold:0,adopted:0,bestStage:-1,wins:0,gifts:0},tower:{best:0},title:"",friends:[],fsent:{},fgot:{},help:null,lastTick:now(),nextId:2,savedAt:0}}
 let S=freshState();
 const have=k=>k==="gold"?S.gold:(S.items[k]||0);
 function give(r){for(const [k,v] of Object.entries(r)){if(!v)continue;if(k==="gold"){S.gold+=v;S.stats.totalGold+=v}else S.items[k]=(S.items[k]||0)+v}}
@@ -686,10 +698,11 @@ async function flush(){
  saving=false;if(now()-lastRankWrite>60000)writeRank();
 }
 async function writeRank(){if(!DB||!UID||!dbWritable)return;lastRankWrite=now();
- try{const tm=teamPets();if(tm.length)await DB.doc("arena/"+UID).set({name:S.nick||"",week:weekKey(),pts:S.arena.pts,w:S.arena.w,l:S.arena.l,power:tm.reduce((t,p)=>t+petPow(p),0),team:tm.map(p=>({sp:p.sp,st:lookOf(p),stage:p.stage,v:p.v,g:p.g||0,lv:p.lv||1,pow:petPow(p)})),at:now()})}catch(e){}
- try{await DB.doc("ranks/"+UID).set({name:S.nick||"",weekBest:S.weekly.week===weekKey()?S.weekly.best:0,week:weekKey(),legends:S.pets.filter(p=>p.stage===5).length,codex:codexCount(S),bestStage:S.stats.bestStage,cleared:S.cleared,totalGold:Math.floor(S.stats.totalGold),at:now()})}catch(e){}}
+ try{const tm=teamPets();if(tm.length)await DB.doc("arena/"+UID).set({name:S.nick||"",ttl:S.title||"",week:weekKey(),pts:S.arena.pts,w:S.arena.w,l:S.arena.l,power:tm.reduce((t,p)=>t+petPow(p),0),team:tm.map(p=>({sp:p.sp,st:lookOf(p),stage:p.stage,v:p.v,g:p.g||0,lv:p.lv||1,pow:petPow(p)})),at:now()})}catch(e){}
+ try{await DB.doc("ranks/"+UID).set({name:S.nick||"",weekBest:S.weekly.week===weekKey()?S.weekly.best:0,week:weekKey(),tower:S.tower.best,ttl:S.title||"",legends:S.pets.filter(p=>p.stage===5).length,codex:codexCount(S),bestStage:S.stats.bestStage,cleared:S.cleared,totalGold:Math.floor(S.stats.totalGold),at:now()})}catch(e){}
+ writeFriend()}
 function migrate(o){const f=freshState();const s=Object.assign(f,o);const g=freshState();
- s.items=Object.assign(g.items,o.items||{});s.pend=Object.assign(g.pend,o.pend||{});s.train=Object.assign(g.train,o.train||{});s.arena=Object.assign(g.arena,o.arena||{});s.event=Object.assign(g.event,o.event||{});(s.pets||[]).forEach(p=>{if(p.sp==="monkey")p.g=4});if(!o.pend||o.v<3){}s.v=3;s.daily=Object.assign(g.daily,o.daily||{});s.weekly=Object.assign(g.weekly,o.weekly||{});s.stats=Object.assign(g.stats,o.stats||{});s.v=2;return s}
+ s.items=Object.assign(g.items,o.items||{});s.pend=Object.assign(g.pend,o.pend||{});s.train=Object.assign(g.train,o.train||{});s.arena=Object.assign(g.arena,o.arena||{});s.event=Object.assign(g.event,o.event||{});(s.pets||[]).forEach(p=>{if(p.sp==="monkey")p.g=4});if(!o.pend||o.v<3){}s.v=3;s.daily=Object.assign(g.daily,o.daily||{});s.weekly=Object.assign(g.weekly,o.weekly||{});s.stats=Object.assign(g.stats,o.stats||{});s.tower=Object.assign(g.tower,o.tower||{});s.v=2;return s}
 
 /* ================= 시간 흐름 ================= */
 function advance(t){
@@ -913,7 +926,7 @@ function arenaView(){
   <p class="sub">상대의 전투 팀과 자동으로 싸워요. 이기면 점수와 보상, 지면 점수가 조금 내려가요. 도전권은 매일 5장.</p>
   ${team.length?"":`<div class="empty" style="margin-top:8px">전투 팀을 먼저 만들어 주세요</div>`}
   <div class="list" style="margin-top:10px">${opps.map((o,i)=>{const mp=myPowerVs(o),op=oppPower(o,team);const tag=mp>=op*1.15?["유리","var(--mint)"]:mp<=op*.85?["불리","var(--coral)"]:["비슷","var(--yolk)"];
-   return `<div class="li opp"><div class="grow"><div class="row"><span class="t" style="font-size:16px">${esc(o.name)}</span>${tierChip(o.pts)}${o.bot?'<span class="pill">연습</span>':""}</div>
+   return `<div class="li opp"><div class="grow"><div class="row"><span class="t" style="font-size:16px">${esc(o.name)}</span>${ttlChip(o.ttl)}${tierChip(o.pts)}${o.bot?'<span class="pill">연습</span>':""}</div>
     <div class="oppteam">${o.team.map(u=>`<div>${sprite(u.sp,Math.min(u.st??u.stage,5),u.v,flipFor(u.sp,Math.min(u.st??u.stage,5),"L")?"flip":"")}</div>`).join("")}</div>
     <div class="sub mono">점수 ${fmt(o.pts)} · 상대 ${fmt(op)} vs 우리 ${fmt(mp)}</div></div>
     <div style="display:grid;gap:6px;justify-items:center"><span class="pill" style="background:${tag[1]};color:${tag[0]==="비슷"?"var(--ink)":"#fff"}">${tag[0]}</span><button class="btn sm red" data-duel="${i}" ${!A.tickets||!team.length?"disabled":""}>도전</button></div></div>`}).join("")}</div></div>
@@ -965,16 +978,16 @@ function expList(){
 
 /* ================= 전투 ================= */
 let selStage=null,fighting=false,speed=1,bmode="stage";
-function battleView(){return `<div class="seg">${[["stage","스테이지"],["arena","아레나"]].map(([k,n])=>`<button aria-pressed="${bmode===k}" data-bmode="${k}">${n}${k==="arena"&&S.arena.tickets>0?` <small>${S.arena.tickets}</small>`:""}</button>`).join("")}</div>`+(bmode==="arena"?arenaView():stageView())}
+function battleView(){return `<div class="seg">${[["stage","스테이지"],["tower","무한의 탑"],["arena","아레나"]].map(([k,n])=>`<button aria-pressed="${bmode===k}" data-bmode="${k}">${n}${k==="arena"&&S.arena.tickets>0?` <small>${S.arena.tickets}</small>`:""}</button>`).join("")}</div>`+(bmode==="arena"?arenaView():bmode==="tower"?towerView():stageView())}
 function stageView(){
  const next=Math.min(S.cleared+1,LAST);if(selStage==null||selStage>next)selStage=next;
- const ch=Math.floor(selStage/10),st=selStage%10,C=CH[ch],boss=st===9,rec=Math.round(recPower(selStage)*(1-teamMods().def)),tp=teamPower(C.el),team=teamPets();
+ const ch=Math.floor(selStage/10),st=selStage%10,C=CH[ch],boss=st===9,rec=Math.round(recPower(selStage)*(1-teamMods().def)),tp=teamPower(C.el)+helpPow(C.el),team=teamPets();
  return `
  <div class="chapters">${CH.map((c,i)=>`<button class="chb" aria-pressed="${i===ch}" data-ch="${i}" ${i*10>next?"disabled":""}><span class="elb el-${c.el}">${EL[c.el]}</span>${i+1}. ${c.name}</button>`).join("")}</div>
  <div class="card">
   <div class="path">${Array.from({length:10},(_,i)=>{const g=ch*10+i;return `<button class="${g<=S.cleared?"done":""} ${g===selStage?"cur":""} ${i===9?"boss":""}" data-stage="${g}" ${g>next?"disabled":""}>${i===9?"보스":i+1}</button>`}).join("")}</div>
   <div class="arena ar-${C.el}" id="arena" style="margin-top:12px">
-   <div class="side" id="ours">${team.map((p,i)=>unitHTML(p.sp,lookOf(p),p.v,false,"u"+i)).join("")||`<span style="font-family:var(--display)">팀이 비었어요</span>`}</div>
+   <div class="side" id="ours">${team.map((p,i)=>unitHTML(p.sp,lookOf(p),p.v,false,"u"+i)).join("")||`<span style="font-family:var(--display)">팀이 비었어요</span>`}${helperUnit()}</div>
    <div class="vsb">VS</div><div class="side" id="foes">${foes(selStage).map((f,i)=>unitHTML(f.sp,f.st,"normal",true,"f"+i,f.boss)).join("")}</div>
   </div>
   <div class="powerline"><div style="flex:1;min-width:180px"><div class="sub">우리 팀 (이 스테이지 기준)</div><div class="num mono">${fmt(tp)} <span class="sub" style="font-size:14px">/ 권장 ${fmt(rec)}</span></div>
@@ -993,6 +1006,43 @@ function unitHTML(sp,st,v,foe,id,boss){return `<div class="unit ${foe?"foe":""} 
 function foes(g){const ch=Math.floor(g/10),st=g%10,pool=EGGS.find(e=>e.k===CH[ch].el).sp,lvl=Math.min(5,Math.floor(g/9));
  if(st===9)return[{sp:pool[ch%pool.length],st:Math.min(5,lvl+1),boss:true}];
  const n=st<3?1:st<6?2:3;return Array.from({length:n},(_,i)=>({sp:pool[(st+i)%pool.length],st:lvl}))}
+const TOWER_EL=["grass","fire","water","wind","earth","light","star","sweet","yokai","divine","cosmic"];
+const towerEl=f=>TOWER_EL[(f-1)%TOWER_EL.length];
+const towerRec=f=>Math.round(400*Math.pow(1.16,f-1)*(f%10===0?1.5:1));
+function towerReward(f){const r={gold:Math.round(Math.min(towerRec(f)*.3,5e6)+500),prem:1+Math.floor(f/5)};if(f%5===0)r.awaken=1+Math.floor(f/10);if(f%10===0)r.trans=1+Math.floor(f/20);if(f%25===0)r.prism=1;return r}
+function towerFoes(f){const el=towerEl(f),pool=EGGS.find(e=>e.k===el).sp,lv=Math.min(5,Math.floor(f/12));if(f%10===0)return[{sp:pool[f%pool.length],st:Math.min(5,lv+1),boss:true}];return Array.from({length:f%3+1},(_,i)=>({sp:pool[(f+i)%pool.length],st:lv}))}
+const helpOn=()=>!!(S.help&&S.help.day===today()&&S.help.left>0&&S.help.pet&&SP[S.help.pet.sp]);
+const helpPow=el=>helpOn()?Math.round(S.help.pet.pow*matchup(SP[S.help.pet.sp][1],el,S.help.pet.v)):0;
+function useHelp(){if(helpOn())S.help.left--}
+function helperUnit(){if(!helpOn())return "";const h=S.help.pet;return unitHTML(h.sp,Math.min(5,h.st||0),h.v,false,"uh").replace('class="unit ','class="unit helper ')}
+function towerView(){const f=S.tower.best+1,el=towerEl(f),rec=Math.round(towerRec(f)*(1-teamMods().def)),tp=teamPower(el)+helpPow(el),team=teamPets(),boss=f%10===0;
+ return `<div class="card"><div class="spread"><div><div class="row"><h2 class="h">🗼 무한의 탑 ${f}층</h2>${elBadge(el)}${boss?'<span class="pill" style="background:#FFD9D2">보스 층</span>':""}</div>
+  <p class="sub">최고 기록 ${S.tower.best}층 · 층마다 속성이 바뀌어요 · 져도 잃는 건 없어요</p></div></div>
+  <div class="arena ar-${el}" id="arena" style="margin-top:12px"><div class="side" id="ours">${team.map((p,i)=>unitHTML(p.sp,lookOf(p),p.v,false,"u"+i)).join("")||`<span style="font-family:var(--display)">팀이 비었어요</span>`}${helperUnit()}</div>
+   <div class="vsb">VS</div><div class="side" id="foes">${towerFoes(f).map((x,i)=>unitHTML(x.sp,x.st,"normal",true,"f"+i,x.boss)).join("")}</div></div>
+  <div class="powerline"><div style="flex:1;min-width:180px"><div class="sub">우리 팀 (이 층 기준)</div><div class="num mono">${fmt(tp)} <span class="sub" style="font-size:14px">/ 권장 ${fmt(rec)}</span></div>
+   <div class="bar"><i style="width:${Math.min(100,tp/rec*100)}%;background:${tp>=rec?"var(--mint)":"var(--yolk)"}"></i></div></div>
+   <button class="btn lg red" data-tfight ${team.length===0?"disabled":""}>${boss?"보스 도전!":"도전!"}</button></div>
+  <div class="spread" style="margin-top:10px"><div class="seg">${[1,2,4].map(x=>`<button aria-pressed="${speed===x}" data-speed="${x}">${x===4?"스킵":x+"배속"}</button>`).join("")}</div><button class="btn sm green" data-tauto>이 층에 맞게 자동 편성</button></div>
+  <p class="sub" style="margin-top:8px">돌파 보상: ${rewardText(towerReward(f))}</p>
+  ${helpOn()?`<p class="sub">🤝 ${esc(S.help.name)}의 ${esc(SP[S.help.pet.sp][0])}가 함께 싸워요 (남은 전투 ${S.help.left}번)</p>`:""}</div>
+ <div class="card"><h2 class="h">다가오는 큰 보상</h2><div class="list" style="margin-top:8px">${[10,25,50,100].map(n=>Math.ceil((S.tower.best+1)/n)*n).filter((v,i,a)=>a.indexOf(v)===i).slice(0,3).map(n=>`<div class="li" style="box-shadow:none"><div class="grow"><div class="t" style="font-size:15px">${n}층</div><div class="sub">${rewardText(towerReward(n))}</div></div>${elBadge(towerEl(n))}</div>`).join("")}</div>
+  <p class="sub" style="margin-top:8px">10층마다 보스 층 · 탑 10, 30, 50, 100층 업적에서 칭호를 받아요</p></div>`}
+async function towerFight(){
+ if(fighting)return;const f=S.tower.best+1,el=towerEl(f),team=teamPets();if(!team.length)return;const tm=teamMods(),boss=f%10===0;
+ const tp=Math.round((teamPower(el)+helpPow(el))*(boss?1+tm.boss:1)),rec=Math.round(towerRec(f)*(1-tm.def));fighting=true;useHelp();S.daily.m.bat++;
+ document.querySelectorAll("[data-tfight],[data-tauto]").forEach(b=>b.disabled=true);
+ let win=tp*(.85+Math.random()*.3)>=rec,revived=false;if(!win&&Math.random()<tm.revive){win=true;revived=true}
+ await battleAnim(tp,rec,win);fighting=false;
+ if(win){const r=towerReward(f);const lm=1+tm.loot;if(lm>1)for(const k in r)r[k]=Math.round(r[k]*lm);if(tm.jackpot&&Math.random()<tm.jackpot){r.gold*=5;setTimeout(()=>toast("💰 금 나와라 뚝딱! 골드 ×5"),200)}
+  give(r);S.tower.best=f;S.stats.wins++;gearToast(dropGear(boss?[20,45,27,8]:[60,30,9,1],boss?1:.1));if(revived)setTimeout(()=>toast("🔥 불사조의 날개! 주작이 팀을 되살렸어요"),300);markDirty();lastRankWrite=0;
+  const m=showRewards(`${f}층 돌파!`,r,boss?"보스 층을 넘었어요!":"",()=>render());
+  m.querySelector("#rbtns").insertAdjacentHTML("afterbegin",`<button class="btn lg red" data-nextst>다음 층</button>`);m.querySelector("[data-nextst]").onclick=()=>{closeModal();render();towerFight()}
+ }else{markDirty();
+  openModal(`<p class="bigtitle lose">패배…</p><p class="sub" style="text-align:center">${f}층 · 우리 팀 ${fmt(tp)} / 권장 ${fmt(rec)}<br>이 층 속성에 강한 펫으로 편성해 보세요</p>
+   <div class="row" style="justify-content:center;margin-top:14px"><button class="btn green" data-a="team">자동 편성</button><button class="btn white" data-a="close" data-ok>닫기</button></div>`,
+   m=>m.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{closeModal();if(b.dataset.a==="team"){S.team=bestTeam(el);markDirty();toast("이 층에 가장 강한 3마리로 편성했어요")}render()}))}
+}
 const weekBossEl=()=>CH[(parseInt(weekKey().split("W")[1])||0)%CH.length].el;
 function gradeOf(d){let g=WEEK_GRADES[0];for(const x of WEEK_GRADES)if(d>=x[1])g=x;return g}
 function weeklyCard(){const el=weekBossEl(),w=S.weekly,g=gradeOf(w.best),sp=EGGS.find(e=>e.k===el).sp,bs=sp[sp.length-1],lock=false;
@@ -1023,10 +1073,37 @@ function codexView(){
  ${EGGS.map(e=>`<div class="card"><div class="row"><h2 class="h" style="font-size:18px">${e.name}</h2>${elBadge(e.k)}</div>
   <div class="codex" style="margin-top:10px">${[...e.sp,...(e.rare&&S.codex[e.rare.sp]?[e.rare.sp]:[])].map(sp=>{const c=S.codex[sp];return `<button class="pc r${c?c.max:0} t-${SP[sp][1]}" data-codex="${sp}"><div class="in">${c?sprite(sp,c.max,"normal"):sprite(sp,0,"normal","sil")}<span class="nm">${c?esc(SP[sp][0]):"???"}</span><span class="pw">${c?Object.keys(c.vars).map(v=>VARS[v].name).join("·"):"미발견"}</span></div></button>`}).join("")}</div></div>`).join("")}`;
 }
+let friendRows=null,recTab="rec";
+const myCode=()=>{if(!UID)return "";let h=5381,h2=7;for(const c of String(UID)){h=((h*33)^c.charCodeAt(0))>>>0;h2=((h2*31)+c.charCodeAt(0))>>>0}return (h.toString(36)+h2.toString(36)).toUpperCase().slice(0,7)};
+const myName=()=>String(rankNames[UID]||S.nick||"플레이어").slice(0,12);
+function bestPetSnap(){let b=null;for(const p of S.pets)if(!b||petPow(p)>petPow(b))b=p;return b?{sp:b.sp,st:lookOf(b),stage:b.stage,v:b.v,pow:petPow(b)}:null}
+async function writeFriend(){if(!DB||!UID||!dbWritable)return;const td=today(),gifts={};for(const c in S.fsent)if(S.fsent[c]===td)gifts[c]=td;
+ try{await DB.doc("friends/"+UID).set({code:myCode(),name:myName(),ttl:S.title||"",pet:bestPetSnap(),tower:S.tower.best,legends:S.pets.filter(p=>p.stage===5).length,gifts,at:now()})}catch(e){}}
+const FR_MAX=20,frRow=c=>(friendRows||[]).find(r=>r.code===c&&r.id!==UID);
+function friendView(){const td=today(),me=myCode();
+ if(!DB)return `<div class="card"><div class="empty">로그인한 상태로 열어야 친구 기능을 쓸 수 있어요</div></div>`;
+ return `<div class="card"><h2 class="h">내 친구 코드</h2><div class="row" style="margin-top:8px"><span class="mono" style="font-family:var(--display);font-size:30px;letter-spacing:3px">${me||"…"}</span><button class="btn sm green" data-fcopy>복사</button></div>
+  <p class="sub">이 코드를 친구에게 알려 주고, 친구 코드도 아래에 넣어요. <b>서로 추가하면</b> 매일 선물을 주고받을 수 있어요.</p>
+  <div class="row" style="margin-top:10px"><input id="fIn" maxlength="10" placeholder="친구 코드" autocomplete="off" style="flex:1;min-width:0;font:inherit;font-family:var(--display);font-size:17px;letter-spacing:1px;padding:8px 12px;border:var(--line);border-radius:12px;text-transform:uppercase"><button class="btn red" data-fadd>친구 추가</button></div></div>
+ <div class="card"><div class="spread"><h2 class="h">친구 목록</h2><span class="sub mono">${S.friends.length}/${FR_MAX}</span></div>
+  <p class="sub">선물은 친구마다 하루 1번 · 펫 빌리기는 하루 1번, 빌린 펫은 오늘 스테이지·탑 전투 5번을 함께 싸워요</p>
+  ${helpOn()?`<p class="sub" style="color:#1F8A5B"><b>🤝 오늘 빌린 펫: ${esc(S.help.name)}의 ${esc(SP[S.help.pet.sp][0])} · 남은 전투 ${S.help.left}번</b></p>`:""}
+  <div class="list" style="margin-top:10px">${S.friends.map(c=>{const r=frRow(c);
+   if(!r)return `<div class="li" style="box-shadow:none"><div class="grow"><div class="t" style="font-size:15px">${esc(c)}</div><div class="sub">${friendRows?"아직 못 찾았어요. 코드가 맞는지, 친구가 게임을 한 번 열었는지 확인해 주세요":"불러오는 중…"}</div></div><button class="btn sm white" data-fdel="${esc(c)}">삭제</button></div>`;
+   const nm=rankNames[r.id]||r.name||"친구",canGet=r.gifts&&r.gifts[me]===td&&S.fgot[c]!==td,sent=S.fsent[c]===td,borrowed=S.help&&S.help.day===td;
+   return `<div class="li" style="box-shadow:none;flex-wrap:wrap">${r.pet&&SP[r.pet.sp]?`<div style="width:54px;height:54px;flex:none">${sprite(r.pet.sp,Math.min(5,r.pet.st||0),r.pet.v)}</div>`:""}
+    <div class="grow"><div class="row" style="gap:4px"><span class="t" style="font-size:16px">${esc(nm)}</span>${ttlChip(r.ttl)}</div><div class="sub">🗼 ${r.tower||0}층 · 전설 ${r.legends||0}${r.pet&&SP[r.pet.sp]?` · ${esc(SP[r.pet.sp][0])} ${fmt(r.pet.pow)}`:""}</div></div>
+    <div class="row" style="gap:4px;flex-basis:100%;justify-content:flex-end">${canGet?`<button class="btn sm red" data-fget="${esc(c)}">🎁 받기</button>`:""}<button class="btn sm ${sent?"white":"green"}" data-fsend="${esc(c)}" ${sent?"disabled":""}>${sent?"보냄":"선물"}</button>
+     <button class="btn sm white" data-fborrow="${esc(c)}" ${borrowed||!r.pet?"disabled":""}>${S.help&&S.help.day===td&&S.help.code===c?"함께하는 중":"빌리기"}</button><button class="btn sm white" data-fdel="${esc(c)}" aria-label="삭제">×</button></div></div>`}).join("")||'<div class="empty">아직 친구가 없어요. 친구 코드를 넣어 보세요</div>'}</div></div>`}
 let rankRows=null,rankSort="weekBest",rankNames={};
-function recView(){const st=S.stats;
- return `<div class="backbar"><button class="x" data-tab="home" aria-label="홈으로">‹</button><h2 class="h">기록</h2></div>
- <div class="card"><h2 class="h">닉네임</h2><p class="sub">랭킹과 아레나에서 친구들에게 보이는 이름이에요 (12자까지)</p>
+function recView(){return `<div class="backbar"><button class="x" data-tab="home" aria-label="홈으로">‹</button><h2 class="h">기록</h2></div>
+ <div class="seg">${[["rec","기록"],["ach","업적·칭호"],["friend","친구"]].map(([k,n])=>`<button aria-pressed="${recTab===k}" data-rtab="${k}">${n}</button>`).join("")}</div>`+(recTab==="ach"?achView():recTab==="friend"?friendView():recMain())}
+function achView(){const own=ONCE.filter(o=>o[4]&&S.once[o[0]]);
+ return `<div class="card"><h2 class="h">내 칭호</h2><p class="sub">고른 칭호가 랭킹, 아레나, 친구 목록에서 이름 옆에 보여요. 업적을 깨면 칭호가 생겨요.</p>
+  <div class="row" style="margin-top:10px;gap:6px"><button class="btn sm ${S.title?"white":""}" data-title="">칭호 없음</button>${own.map(o=>`<button class="btn sm ${S.title===o[4]?"":"white"}" data-title="${esc(o[4])}">${esc(o[4])}</button>`).join("")||'<span class="sub">아직 받은 칭호가 없어요</span>'}</div></div>
+ <div class="card"><div class="spread"><h2 class="h">업적</h2><span class="sub mono">${ONCE.filter(o=>S.once[o[0]]).length}/${ONCE.length}</span></div><div class="list" style="margin-top:10px">${ONCE.map(o=>{const done=o[3](S),got=S.once[o[0]];return `<div class="li" style="box-shadow:none"><div class="grow"><div class="t" style="font-size:15px">${o[1]}</div><div class="sub">${rewardText(o[2])}${o[4]?` · 칭호 ${ttlChip(o[4])}`:""}</div></div>${got?'<span class="pill">완료</span>':`<button class="btn sm ${done?"red":""}" data-once="${o[0]}" ${done?"":"disabled"}>${done?"받기":"진행 중"}</button>`}</div>`}).join("")}</div></div>`}
+function recMain(){const st=S.stats;
+ return ` <div class="card"><h2 class="h">닉네임</h2><p class="sub">랭킹과 아레나에서 친구들에게 보이는 이름이에요 (12자까지)</p>
   <div class="row" style="margin-top:8px"><input id="nick" maxlength="12" value="${esc(S.nick||"")}" placeholder="닉네임 입력" style="flex:1;min-width:0;font:inherit;font-family:var(--display);font-size:17px;padding:8px 12px;border:var(--line);border-radius:12px"><button class="btn" data-savenick>저장</button></div></div>
  <div class="card"><div class="statrow" style="grid-template-columns:repeat(auto-fit,minmax(100px,1fr));margin-top:0">
   <div>최고 단계<b>${st.bestStage>=0?STAGES[st.bestStage]:"-"}</b></div><div>전설 펫<b class="mono">${S.pets.filter(p=>p.stage===5).length}</b></div><div>도감<b class="mono">${codexCount(S)}/${SPN}</b></div>
@@ -1044,8 +1121,7 @@ function recView(){const st=S.stats;
   <textarea id="xferOut" readonly hidden rows="3" style="width:100%;margin-top:8px;font:12px monospace;border:2px solid var(--ink);border-radius:10px;padding:8px;word-break:break-all"></textarea>
   <textarea id="xferIn" rows="3" placeholder="여기에 PET로 시작하는 옮기기 코드를 붙여 넣기" style="width:100%;margin-top:10px;font:12px monospace;border:var(--line);border-radius:12px;padding:8px;word-break:break-all"></textarea>
   <div class="row" style="margin-top:6px"><button class="btn blue" data-xload>붙여 넣은 기록 불러오기</button></div></div>
- <div class="card"><h2 class="h">업적</h2><div class="list" style="margin-top:10px">${ONCE.map(o=>{const done=o[3](S),got=S.once[o[0]];return `<div class="li" style="box-shadow:none"><div class="grow"><div class="t" style="font-size:15px">${o[1]}</div><div class="sub">${rewardText(o[2])}</div></div>${got?'<span class="pill">완료</span>':`<button class="btn sm ${done?"red":""}" data-once="${o[0]}" ${done?"":"disabled"}>${done?"받기":"진행 중"}</button>`}</div>`}).join("")}</div></div>
- <div class="card"><div class="spread"><h2 class="h">랭킹</h2><div class="seg">${[["weekBest","주간 데미지"],["legends","전설"],["codex","도감"],["totalGold","골드"]].map(([k,n])=>`<button aria-pressed="${rankSort===k}" data-rsort="${k}">${n}</button>`).join("")}</div></div>
+ <div class="card"><div class="spread"><h2 class="h">랭킹</h2><div class="seg">${[["weekBest","주간 데미지"],["tower","탑"],["legends","전설"],["codex","도감"],["totalGold","골드"]].map(([k,n])=>`<button aria-pressed="${rankSort===k}" data-rsort="${k}">${n}</button>`).join("")}</div></div>
   <div class="tabwrap" style="margin-top:10px" id="rankBox">${rankTable()}</div></div>
  <div class="card"><h2 class="h">입양 앨범</h2>${S.album.length?`<div class="grid" style="margin-top:10px">${S.album.slice().reverse().map(a=>`<div class="pc r${a.stage}"><div class="in">${sprite(a.sp,a.stage,a.v)}<span class="nm">${esc(SP[a.sp][0])}</span><span class="pw">${a.date}</span></div></div>`).join("")}</div>`:`<div class="empty" style="margin-top:10px">아직 주인을 찾아준 펫이 없어요</div>`}</div>`;
 }
@@ -1054,7 +1130,7 @@ function rankTable(){
  if(!rankRows)return `<div class="empty">랭킹을 불러오는 중이에요</div>`;
  const wk=weekKey();const rows=rankRows.map(r=>({...r,weekBest:r.week===wk?r.weekBest:0})).sort((a,b)=>(b[rankSort]||0)-(a[rankSort]||0)).slice(0,30);
  if(!rows.length)return `<div class="empty">아직 기록이 없어요</div>`;
- return `<table class="rank"><thead><tr><th>#</th><th>이름</th><th>주간 데미지</th><th>전설</th><th>도감</th><th>골드</th></tr></thead><tbody>${rows.map((r,i)=>`<tr${r.id===UID?' style="font-weight:700;background:#FFF6D6"':""}><td>${i+1}</td><td>${esc(rankNames[r.id]||(r.id===UID?"나":"플레이어"))}</td><td>${fmt(r.weekBest||0)}</td><td>${r.legends||0}</td><td>${r.codex||0}</td><td>${fmt(r.totalGold||0)}</td></tr>`).join("")}</tbody></table>`}
+ return `<table class="rank"><thead><tr><th>#</th><th>이름</th><th>주간 데미지</th><th>탑</th><th>전설</th><th>도감</th><th>골드</th></tr></thead><tbody>${rows.map((r,i)=>`<tr${r.id===UID?' style="font-weight:700;background:#FFF6D6"':""}><td>${i+1}</td><td>${esc(rankNames[r.id]||(r.id===UID?"나":"플레이어"))}${ttlChip(r.ttl)}</td><td>${fmt(r.weekBest||0)}</td><td>${r.tower||0}층</td><td>${r.legends||0}</td><td>${r.codex||0}</td><td>${fmt(r.totalGold||0)}</td></tr>`).join("")}</tbody></table>`}
 const VIEWS={event:eventView,home:homeView,pets:petsView,adv:advView,battle:battleView,shop:shopView,codex:codexView,rec:recView};
 
 /* ================= 모달 ================= */
@@ -1357,13 +1433,10 @@ function autoWork(){
  for(const p of idle){let best=-1;WORKS.forEach((w,i)=>{if(S.works[i]&&p.stage>=w.min&&S.pets.filter(x=>x.work===i).length<w.slots&&(best<0||w.mult>WORKS[best].mult))best=i});if(best>=0){p.work=best;n++}}
  markDirty();render();toast(n?`${n}마리를 일터에 배치했어요`:"빈자리나 쉬는 펫이 없어요");
 }
-async function fight(){
- if(fighting)return;const g=selStage,ch=Math.floor(g/10),C=CH[ch],boss=g%10===9,team=teamPets();if(!team.length)return;
- const tp=Math.round(teamPower(C.el)*(boss?1+teamMods().boss:1)),rec=Math.round(recPower(g)*(1-teamMods().def));fighting=true;S.daily.m.bat++;
- document.querySelectorAll("[data-fight],[data-stage],[data-ch]").forEach(b=>b.disabled=true);
- let win=tp*(.85+Math.random()*.3)>=rec,revived=false;if(!win&&Math.random()<teamMods().revive){win=true;revived=true}
- const ours=team.map((p,i)=>({el:$("#u"+i),hp:1})),fz=[...document.querySelectorAll("#foes .unit")].map(el=>({el,hp:1}));
- const turns=speed===4?2:6,wait=ms=>sleep(speed===4?50:ms/speed);
+const wait=ms=>sleep(speed===4?50:ms/speed);
+async function battleAnim(tp,rec,win){
+ const ours=[...document.querySelectorAll("#ours .unit")].map(el=>({el,hp:1})),fz=[...document.querySelectorAll("#foes .unit")].map(el=>({el,hp:1}));
+ const turns=speed===4?2:6;ms=>sleep(speed===4?50:ms/speed);
  const endOurs=win?Math.max(.15,1-rec/tp*.7):0,endFoes=win?0:Math.max(.1,1-tp/rec*.9);
  const lossOurs=(1-endOurs)*ours.length/turns,lossFoes=(1-endFoes)*fz.length/turns;
  const strike=async(att,def,amt,cls,shown)=>{
@@ -1378,7 +1451,14 @@ async function fight(){
   if(!$("#arena"))break;
   await strike(fz,ours,lossOurs,"lungeL",rec/turns*(.85+Math.random()*.3));await wait(240);
  }
- await wait(300);fighting=false;
+ await wait(300)}
+async function fight(){
+ if(fighting)return;const g=selStage,ch=Math.floor(g/10),C=CH[ch],boss=g%10===9,team=teamPets();if(!team.length)return;
+ const tp=Math.round((teamPower(C.el)+helpPow(C.el))*(boss?1+teamMods().boss:1)),rec=Math.round(recPower(g)*(1-teamMods().def));fighting=true;useHelp();S.daily.m.bat++;
+ document.querySelectorAll("[data-fight],[data-stage],[data-ch]").forEach(b=>b.disabled=true);
+ let win=tp*(.85+Math.random()*.3)>=rec,revived=false;if(!win&&Math.random()<teamMods().revive){win=true;revived=true}
+ await battleAnim(tp,rec,win);
+ fighting=false;
  if(win){const first=g>S.cleared;const r={gold:C.gold*(boss?3:1)};r[C.mat[0]]=C.mat[1];
   if(boss){if(first)Object.assign(r,C.bossFirst);else{if(Math.random()<C.rep)r.awaken=(r.awaken||0)+1;if(Math.random()<.01)r.trans=(r.trans||0)+1}}else if(Math.random()<.02)r.awaken=(r.awaken||0)+1;
   {const tmm=teamMods(),lm=1+tmm.loot;if(lm>1)for(const k in r)r[k]=Math.round(r[k]*lm);if(tmm.jackpot&&Math.random()<tmm.jackpot){r.gold*=5;setTimeout(()=>toast("💰 금 나와라 뚝딱! 골드 ×5"),200)}}give(r);S.stats.wins++;if(first){S.cleared=g;if(g<LAST)selStage=g+1}gearToast(dropGear(boss?[30,45,20,5]:[70,25,5,0],boss?1:.08));if(revived)setTimeout(()=>toast("🔥 불사조의 날개! 주작이 팀을 되살렸어요"),300);markDirty();
@@ -1406,6 +1486,16 @@ document.addEventListener("click",e=>{
  if(t.closest(".modal"))return;
  if(d.pet&&tab==="pets"&&selMode){const p=petById(+d.pet);if(!p||p.exp!=null)return toast("원정 중인 펫은 보낼 수 없어요");sel.has(p.id)?sel.delete(p.id):sel.add(p.id);return render()}
  if(t.hasAttribute("data-news"))return newsModal();
+ if(d.rtab){recTab=d.rtab;return render()}
+ if(d.title!=null&&tab==="rec"){if(d.title&&!ONCE.some(o=>o[4]===d.title&&S.once[o[0]]))return;S.title=d.title;markDirty();lastRankWrite=0;render();return toast(d.title?`칭호 「${d.title}」를 달았어요`:"칭호를 뗐어요")}
+ if(t.hasAttribute("data-tfight"))return towerFight();
+ if(t.hasAttribute("data-tauto")){S.team=bestTeam(towerEl(S.tower.best+1));markDirty();render();return toast("이 층에 가장 강한 3마리로 편성했어요")}
+ if(t.hasAttribute("data-fcopy")){const c=myCode();try{navigator.clipboard.writeText(c)}catch(e){}return toast(`친구 코드 ${c} 복사했어요`)}
+ if(t.hasAttribute("data-fadd")){const c=($("#fIn")?.value||"").trim().toUpperCase().replace(/[^A-Z0-9]/g,"");if(c.length<4)return toast("친구 코드를 확인해 주세요");if(c===myCode())return toast("내 코드예요");if(S.friends.includes(c))return toast("이미 추가한 친구예요");if(S.friends.length>=FR_MAX)return toast(`친구는 ${FR_MAX}명까지예요`);S.friends.push(c);markDirty();render();const r=frRow(c);return toast(r?`${rankNames[r.id]||r.name||"친구"}를 친구로 추가했어요`:"추가했어요. 친구를 찾는 중이에요")}
+ if(d.fdel){S.friends=S.friends.filter(x=>x!==d.fdel);markDirty();return render()}
+ if(d.fsend){const td=today();if(S.fsent[d.fsend]===td)return;for(const k in S.fsent)if(S.fsent[k]!==td)delete S.fsent[k];S.fsent[d.fsend]=td;S.stats.gifts=(S.stats.gifts||0)+1;markDirty();writeFriend();render();return toast("🎁 선물을 보냈어요")}
+ if(d.fget){const td=today(),r=frRow(d.fget);if(!r||!r.gifts||r.gifts[myCode()]!==td||S.fgot[d.fget]===td)return;for(const k in S.fgot)if(S.fgot[k]!==td)delete S.fgot[k];S.fgot[d.fget]=td;const g={gold:5000,food:5};if(Math.random()<.15)g.awaken=1;give(g);markDirty();render();return showRewards("친구 선물!",g,`${esc(rankNames[r.id]||r.name||"친구")}가 보낸 선물이에요`)}
+ if(d.fborrow){const td=today(),r=frRow(d.fborrow);if(!r||!r.pet||!SP[r.pet.sp])return;if(S.help&&S.help.day===td)return toast("오늘은 이미 펫을 빌렸어요");S.help={day:td,left:5,code:d.fborrow,name:String(rankNames[r.id]||r.name||"친구").slice(0,12),pet:{sp:r.pet.sp,st:r.pet.st,v:r.pet.v,pow:Math.min(+r.pet.pow||0,1e12)}};markDirty();render();return toast(`🤝 ${SP[r.pet.sp][0]}를 빌렸어요! 오늘 전투 5번 함께해요`)}
  if(d.pet)return petModal(+d.pet);
  if(t.hasAttribute("data-selmode")){selMode=!selMode;sel.clear();return render()}
  if(d.selq){if(d.selq==="c")sel.clear();else S.pets.filter(p=>p.exp==null&&(petFilter==="all"||petEl(p)===petFilter)&&(d.selq==="n"?(p.g||0)===0:p.stage===0)).forEach(p=>sel.add(p.id));return render()}
@@ -1491,6 +1581,7 @@ boot(loadLocal());
   if(snap.exists){const d=snap.data();if(d&&d.json&&(d.savedAt||0)>(S.savedAt||0)){try{S=migrate(JSON.parse(d.json));advance(now());render();toast("저장된 기록을 불러왔어요");offlineModal()}catch(e){}}}
   dirty=true;await flush();
   db.collection("arena").onSnapshot(q=>{arenaRows=q.docs.map(x=>({id:x.id,...x.data()}));arenaRows.forEach(r=>{if(r.name)rankNames[r.id]=r.name});if(tab==="battle"&&bmode==="arena"&&!$("#modalRoot").innerHTML)render()},e=>console.warn(e));
+  db.collection("friends").onSnapshot(q=>{friendRows=q.docs.map(x=>({id:x.id,...x.data()}));if(tab==="rec"&&recTab==="friend"&&!$("#modalRoot").innerHTML)render()},()=>{});
   db.collection("worldboss").onSnapshot(q=>{wbRows=q.docs.map(x=>({id:x.id,...x.data()}));wbRows.forEach(r=>{if(r.name&&!rankNames[r.id])rankNames[r.id]=r.name});if((tab==="event"||tab==="home")&&!$("#modalRoot").innerHTML&&!fighting)render()},()=>{});
   db.collection("ranks").onSnapshot(q=>{rankRows=q.docs.map(x=>({id:x.id,...x.data()}));rankRows.forEach(r=>{if(r.name)rankNames[r.id]=r.name});const b=$("#rankBox");if(b)b.innerHTML=rankTable()},e=>console.warn(e));
   writeRank();
