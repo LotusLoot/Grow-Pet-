@@ -429,6 +429,7 @@ body{background:radial-gradient(rgba(255,255,255,.4) 1.6px,transparent 2px) 0 0/
 .t-moon{--tint:#E4E9FF;--tint2:#A9B8F5}.ar-moon{--abg1:#141A45;--abg2:#2F3C85}
 .pc.wolfc{--rc:conic-gradient(from 0deg,#E8F0FF,#7F9CFF,#2B3A8C,#C9D6FF,#E8F0FF);box-shadow:0 4px 0 var(--ink),0 0 16px rgba(127,156,255,.75)}.pc.wolfc .in{background:radial-gradient(circle at 50% 40%,#2F3C85,#0B1030)}.pc.wolfc .nm{color:#E4ECFF}.pc.wolfc .pw{color:#AFC0FF}
 .moonfx{background:radial-gradient(circle at 50% 55%,#3D4FA8,#0B1030 75%)!important}.moonscreen{background:radial-gradient(circle at 50% 50%,rgba(200,215,255,.6),rgba(8,12,40,.92) 70%)!important}.moonscreen b{color:#EAF0FF!important;text-shadow:0 0 18px #7F9CFF,0 3px 0 #24305E!important}
+.gicon.gmyth{filter:drop-shadow(0 0 6px #FF3D8B) drop-shadow(0 0 2px #FFD24A);animation:gmy 1.8s ease-in-out infinite alternate}@keyframes gmy{to{filter:drop-shadow(0 0 10px #FF8FE0) drop-shadow(0 0 3px #FFD24A)}}
 .el-yokai{background:linear-gradient(135deg,#DC2626,#0EA5A4)}.egg-yokai{background:radial-gradient(circle at 35% 35%,#FFE4D6,#F2734F 50%,#2A9D9B)}.egg-yokai::after{background:radial-gradient(circle,#7FFFE9 0 3px,transparent 4px) 0 0/14px 12px;height:24px;top:28%;opacity:.8}.t-yokai{--tint:#E3F7F4;--tint2:#9FDCD4}.ar-yokai{--abg1:#1F3B46;--abg2:#3E2A4F}
 .el-sweet{background:#FF8FB8}.egg-sweet{background:radial-gradient(circle at 35% 35%,#FFF0F6,#FFB8D2 50%,#B8E6FF)}
 .egg-sweet::after{background:repeating-linear-gradient(90deg,#fff 0 5px,#FF8FB8 5px 10px)}
@@ -508,8 +509,10 @@ const GRADES=[{k:"N",name:"노멀",m:1,c:"#9AA6C6"},{k:"R",name:"레어",m:1.8,c
 const INCS=[{k:"inc0",name:"기본 부화 기계",mult:1,odds:[80,18,2,0]},{k:"inc1",name:"고급 부화 기계",mult:2,odds:[40,45,13,2]},{k:"inc2",name:"황금 부화 기계",mult:4,odds:[0,50,38,12]},{k:"inc3",name:"천상 부화 기계",mult:8,odds:[0,0,55,45]}];
 const gradeOf2=p=>GRADES[p.g||0];
 const gradeChip=p=>`<span class="gr ${gradeOf2(p).k==="UR"?"ur":""}" style="background:${gradeOf2(p).c}">${gradeOf2(p).k}</span>`;
-const LOG_VER=26;
+const LOG_VER=28;
 const UPDATE_LOG=[
+ ["3.7","⚡ 장비 일괄 합성 · 목표 등급까지 낮은 등급부터 한번에 합성 (만든 장비도 다시 재료로)","남는 장비를 부위 섞어서도 합성할지 고를 수 있어요"],
+ ["3.6","⚒️ 장비 합성! 같은 등급 장비 3개 → 한 단계 위 장비 (펫 → 장비 가방 → 장비 합성)","부위를 골라 합성하거나 섞어서 무작위 부위로 · 강화 수치 절반 이어받기 · 10% 대성공 +3","새 장비 등급 신화: 별무리 왕관(전투력 +50%), 월광 목걸이(수익 +50%), 은하 날개신(둘 다 +28%) · 합성으로만 얻어요","업적 「신화 장비 만들기」 → 칭호 전설의 대장장이"],
  ["3.5","🔊 효과음 추가! 버튼, 알 깨기, 부화, 강화, 전투, 보상, 수익 받기","특별한 펫(노바·월광 늑대)이 태어나면 더 웅장한 소리","오른쪽 위 스피커 버튼으로 켜고 끌 수 있어요"],
  ["3.4","🌕 월광 늑대 강화! 기본 능력 ×7 → ×10","「달의 포효」 단계마다 팀 전투력 +12% → +15% (전설 +90%, 탑에서는 2배)","전설이 되면 상대 전투력 -15%, 전투 보상 ×1.3 추가"],
  ["3.3","🌙 엔드 콘텐츠 3탄: 달밤 알 · 7챕터 은하 보스 클리어 후, 800만 골드 + 초월석 8, 기본 능력 ×5","새 속성 달: 우주에게 1.5배, 나머지에게 1.3배","졸린 부엉냥 「밤샘 근무」 밤 9시~아침 6시 일터 수익 +50~100% · 별사탕 고슴도치 「별가시」 탑 전투력 +30~50% · 달토끼 떡 「떡방아」 매일 각성석 3개 (전설은 초월석 +1)","🌕 달밤 알 5개를 합치면 월광 알! 최강 펫 월광 늑대 확정 (기본 능력 ×7) · 스킬 「달의 포효」 항상 발동, 단계마다 팀 전투력 +12%, 탑에서는 2배"],
@@ -578,7 +581,7 @@ ONCE.push(["vceles","천상 변이 첫 발견",{trans:2},s=>hasVar(s,"celestial"
  ["gold1e8","누적 골드 1억",{awaken:5},s=>s.stats.totalGold>=1e8,"부자"],["gold1e10","누적 골드 100억",{trans:5},s=>s.stats.totalGold>=1e10,"재벌"],["win1000","전투 1,000승",{awaken:5,trans:1},s=>s.stats.wins>=1000,"백전노장"],
  ["arenaG","아레나 골드 달성",{awaken:3},s=>s.arena.best>=1250,"아레나 강자"],["arenaM","아레나 마스터 달성",{trans:3},s=>s.arena.best>=1700,"아레나 챔피언"],
  ["tw10","무한의 탑 10층",{awaken:3},s=>s.tower.best>=10,"탑 등반가"],["tw30","무한의 탑 30층",{awaken:5,trans:1},s=>s.tower.best>=30,"구름 위 산책자"],["tw50","무한의 탑 50층",{trans:3,prism:1},s=>s.tower.best>=50,"하늘탑 정복자"],["tw100","무한의 탑 100층",{trans:10,prism:3},s=>s.tower.best>=100,"무한의 지배자"],
- ["wolf","월광 늑대 부화",{trans:5},s=>!!s.codex.wolf,"달의 주인"],["fr3","친구 3명 추가",{gold:10000},s=>s.friends.length>=3,"인싸"],["gift20","친구에게 선물 20번 보내기",{awaken:3},s=>(s.stats.gifts||0)>=20,"선물 요정"]);
+ ["wolf","월광 늑대 부화",{trans:5},s=>!!s.codex.wolf,"달의 주인"],["gmyth","신화 장비 만들기",{trans:3},s=>(s.gear||[]).some(g=>g.r>=4),"전설의 대장장이"],["fr3","친구 3명 추가",{gold:10000},s=>s.friends.length>=3,"인싸"],["gift20","친구에게 선물 20번 보내기",{awaken:3},s=>(s.stats.gifts||0)>=20,"선물 요정"]);
 const ttlChip=t=>t?`<span class="ttl">${esc(t)}</span>`:"";
 const SLOT_BASE=40,SLOT_MAXUP=6;
 const maxPets=()=>SLOT_BASE+((S&&S.slots)||0)*10;
@@ -672,10 +675,11 @@ function nightMul(){const t=Date.now();if(t-_nm.t<5000)return _nm.v;const h=new 
 function mochiGift(){if(!S.pets||S.mochiDay===today())return;const ms=S.pets.filter(q=>q.sp==="mochi"&&skillOn(q));if(!ms.length)return;S.mochiDay=today();const r={awaken:3};if(ms.some(q=>q.stage>=5))r.trans=1;give(r);markDirty();setTimeout(()=>toast(`🍡 떡방아! 달토끼 떡이 각성석 3개${r.trans?", 초월석 1개":""}를 줬어요`),600)}
 function offMul(){let b=0;for(const q of S.pets)if(q.work!=null&&SKILLS[q.sp]&&SKILLS[q.sp].type==="offline"&&skillOn(q))b=Math.max(b,skillVal(q));return 1+b}
 /* ================= 장비 ================= */
-const GSLOT={hat:{name:"모자",names:["낡은 모자","탐험가 모자","마법사 모자","왕관 모자"],atk:[5,10,18,30],inc:[0,0,0,0]},
- neck:{name:"목걸이",names:["조개 목걸이","별 목걸이","보석 목걸이","전설의 펜던트"],atk:[0,0,0,0],inc:[5,10,18,30]},
- shoe:{name:"신발",names:["짚신","가죽 장화","바람 신발","천상의 신발"],atk:[3,6,10,16],inc:[3,6,10,16]}};
-const GRAR=[["일반","#9AA6C6"],["희귀","#3D8BFF"],["영웅","#9B6BFF"],["전설","#FF8A1F"]];
+const GSLOT={hat:{name:"모자",names:["낡은 모자","탐험가 모자","마법사 모자","왕관 모자","별무리 왕관"],atk:[5,10,18,30,50],inc:[0,0,0,0,0]},
+ neck:{name:"목걸이",names:["조개 목걸이","별 목걸이","보석 목걸이","전설의 펜던트","월광 목걸이"],atk:[0,0,0,0,0],inc:[5,10,18,30,50]},
+ shoe:{name:"신발",names:["짚신","가죽 장화","바람 신발","천상의 신발","은하 날개신"],atk:[3,6,10,16,28],inc:[3,6,10,16,28]}};
+const GRAR=[["일반","#9AA6C6"],["희귀","#3D8BFF"],["영웅","#9B6BFF"],["전설","#FF8A1F"],["신화","#FF3D8B"]];
+const GFUSE_COST=r=>5000*Math.pow(r+1,3);
 const GMAX=10;
 const gStat=(g,k)=>GSLOT[g.slot][k][g.r]*(1+(g.lv||0)*.1);
 const gOf=p=>(S.gear||[]).filter(g=>g.on===p.id);
@@ -684,11 +688,41 @@ const gearDisc=()=>{let b=0;for(const q of S.pets)if(SKILLS[q.sp]&&SKILLS[q.sp].
 const gUpCost=g=>Math.round(1000*((g.lv||0)+1)*(g.r+1)*(g.r+1)*(1-gearDisc()));
 const gSell=g=>Math.round(500*(g.r+1)*(g.r+1)*(1+(g.lv||0)*.5));
 const GICON={hat:'<path d="M6 30 L34 30 L30 24 L24 6 L14 18 L10 24 Z"/><path d="M4 30h32" stroke-width="4"/>',neck:'<path d="M8 6 Q20 26 32 6" fill="none"/><path d="M20 22 L27 29 L20 37 L13 29 Z"/>',shoe:'<path d="M10 6h10v16l12 4q4 2 4 6v4H6V26q0-4 4-6z"/>'};
-const gIcon=(g,sz=36)=>`<svg class="gicon" width="${sz}" height="${sz}" viewBox="0 0 40 40" style="--gc:${GRAR[g.r][1]}"><rect x="1" y="1" width="38" height="38" rx="10" fill="${GRAR[g.r][1]}22" stroke="${GRAR[g.r][1]}" stroke-width="2.5"/><g fill="${GRAR[g.r][1]}" stroke="#24305E" stroke-width="2.4" stroke-linejoin="round" transform="translate(2 1) scale(.9)">${GICON[g.slot]}</g></svg>`;
+const gIcon=(g,sz=36)=>`<svg class="gicon ${g.r>=4?"gmyth":""}" width="${sz}" height="${sz}" viewBox="0 0 40 40" style="--gc:${GRAR[g.r][1]}"><rect x="1" y="1" width="38" height="38" rx="10" fill="${GRAR[g.r][1]}22" stroke="${GRAR[g.r][1]}" stroke-width="2.5"/><g fill="${GRAR[g.r][1]}" stroke="#24305E" stroke-width="2.4" stroke-linejoin="round" transform="translate(2 1) scale(.9)">${GICON[g.slot]}</g></svg>`;
 const gName=g=>`${GSLOT[g.slot].names[g.r]}${g.lv?` +${g.lv}`:""}`;
 const gDesc=g=>[gStat(g,"atk")?`전투력 +${Math.round(gStat(g,"atk"))}%`:"",gStat(g,"inc")?`수익 +${Math.round(gStat(g,"inc"))}%`:""].filter(Boolean).join(" · ");
 function dropGear(table,chance=1){if(Math.random()>=chance)return null;const r0=Math.random()*100;let a=0,r=0;for(let i=0;i<4;i++){a+=table[i];if(r0<a){r=i;break}}
  const slots=Object.keys(GSLOT);const g={id:S.nextId++,slot:slots[Math.floor(Math.random()*slots.length)],r,lv:0,on:null};S.gear=S.gear||[];S.gear.push(g);return g}
+function gFuseModal(){const free=r=>(S.gear||[]).filter(g=>g.r===r&&g.on==null);
+ openModal(`${head("장비 합성")}<p class="sub">끼고 있지 않은 같은 등급 장비 3개 → 한 단계 위 장비 1개. 강화 수치가 낮은 것부터 써요. 새 장비는 재료 중 가장 높은 강화 수치의 절반을 이어받고, 10% 확률로 대성공하면 +3 더!</p>
+  <div class="li" style="box-shadow:none;flex-wrap:wrap;background:#FFF6D6"><div class="grow"><div class="t" style="font-size:16px">⚡ 일괄 합성</div><div class="sub">낮은 등급부터 위로 올라가며 한번에 합성해요. 만든 장비도 다시 재료가 돼요.</div></div>
+   <div class="row" style="gap:4px;flex-basis:100%;margin-top:6px"><span class="sub">어디까지</span>${[1,2,3,4].map(t=>`<button class="btn sm ${bfTo===t?"":"white"}" data-bfto="${t}" style="color:${bfTo===t?"":GRAR[t][1]}">${GRAR[t][0]}</button>`).join("")}</div>
+   <div class="row" style="gap:6px;flex-basis:100%;justify-content:space-between;margin-top:6px"><label class="sub" style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-bfmix ${bfMix?"checked":""}> 남는 건 부위 섞어서도 합성</label><button class="btn red" data-bfgo>일괄 합성</button></div></div>
+  <div class="list" style="margin-top:10px">${[0,1,2,3].map(r=>{const fr=free(r),c=GFUSE_COST(r);return `<div class="li" style="box-shadow:none;flex-wrap:wrap"><div class="grow"><div class="t" style="font-size:16px"><span style="color:${GRAR[r][1]}">${GRAR[r][0]}</span> → <span style="color:${GRAR[r+1][1]}">${GRAR[r+1][0]}</span></div><div class="sub">남는 장비 ${fr.length}개 · ${itIcon("gold")}${fmt(c)}</div></div>
+   <div class="row" style="gap:4px;flex-basis:100%;justify-content:flex-end">${Object.entries(GSLOT).map(([k,v])=>{const n=fr.filter(g=>g.slot===k).length;return `<button class="btn sm white" data-gf="${r}" data-gfs="${k}" ${n>=3&&S.gold>=c?"":"disabled"}>${v.name} ${n}</button>`}).join("")}<button class="btn sm" data-gf="${r}" data-gfs="mix" ${fr.length>=3&&S.gold>=c?"":"disabled"} title="부위는 무작위">섞어서</button></div></div>`}).join("")}</div>`,
+  m=>{m.querySelector("[data-x]").onclick=closeModal;m.querySelectorAll("[data-gf]").forEach(b=>b.onclick=()=>{if(!b.disabled)doGFuse(+b.dataset.gf,b.dataset.gfs)});
+   m.querySelectorAll("[data-bfto]").forEach(b=>b.onclick=()=>{bfTo=+b.dataset.bfto;gFuseModal()});m.querySelector("[data-bfmix]").onchange=e=>{bfMix=e.target.checked};m.querySelector("[data-bfgo]").onclick=bulkFuse})}
+function fuseCore(r,slot){const c=GFUSE_COST(r);const pool=(S.gear||[]).filter(g=>g.r===r&&g.on==null&&(slot==="mix"||g.slot===slot)).sort((a,b)=>(a.lv||0)-(b.lv||0));if(pool.length<3||S.gold<c)return null;
+ const use=pool.slice(0,3);S.gold-=c;S.gear=S.gear.filter(g=>!use.includes(g));const slots=Object.keys(GSLOT);const big=Math.random()<.1;
+ const ng={id:S.nextId++,slot:slot==="mix"?slots[Math.floor(Math.random()*slots.length)]:slot,r:r+1,lv:Math.min(GMAX,Math.floor(Math.max(...use.map(g=>g.lv||0))/2)+(big?3:0)),on:null,big};S.gear.push(ng);S.stats.gfuse=(S.stats.gfuse||0)+1;return ng}
+let bfTo=3,bfMix=false;
+function bulkFuse(){const made=[0,0,0,0,0];let spent=0,bigs=0,best=null;const g0=S.gold;
+ for(let r=0;r<bfTo;r++){let ng;
+  for(const k of Object.keys(GSLOT))while((ng=fuseCore(r,k))){made[ng.r]++;if(ng.big)bigs++;if(!best||ng.r>best.r||(ng.r===best.r&&ng.lv>best.lv))best=ng}
+  if(bfMix)while((ng=fuseCore(r,"mix"))){made[ng.r]++;if(ng.big)bigs++;if(!best||ng.r>best.r||(ng.r===best.r&&ng.lv>best.lv))best=ng}}
+ S.gear.forEach(g=>delete g.big);spent=g0-S.gold;
+ if(!best){toast(S.gold<GFUSE_COST(0)?"골드가 부족해요":"합성할 수 있는 장비가 없어요");return}
+ S.stats.totalGold+=0;markDirty();render();sfx(best.r>=4?"legend":"fuse");
+ openModal(`<div class="stage-bg ${best.r>=4?"moonfx":""}" style="height:170px"><div class="rays gold"></div><div style="position:relative">${gIcon(best,96)}</div></div>
+  <p class="bigtitle">일괄 합성 완료!</p><p class="sub" style="text-align:center">최고: <b style="color:${GRAR[best.r][1]}">[${GRAR[best.r][0]}] ${gName(best)}</b></p>
+  <div class="reward">${made.map((n,r)=>n?`<div class="rt"><b style="color:${GRAR[r][1]}">${GRAR[r][0]}</b><b>${n}개</b><span class="n">새로 만듦</span></div>`:"").join("")}</div>
+  <p class="sub" style="text-align:center">쓴 골드 ${fmt(spent)}${bigs?` · 대성공 ${bigs}번!`:""}</p>
+  <div class="row" style="justify-content:center;margin-top:12px"><button class="btn lg" data-ok>확인</button></div>`,m=>m.querySelector("[data-ok]").onclick=()=>{closeModal();render()})}
+function doGFuse(r,slot){const ng=fuseCore(r,slot);if(!ng)return;const big=ng.big;delete ng.big;markDirty();render();sfx(ng.r>=4?"legend":"fuse");
+ openModal(`<div class="stage-bg ${ng.r>=4?"moonfx":""}" style="height:190px"><div class="rays gold"></div><div style="position:relative">${gIcon(ng,110)}</div></div>
+  <p class="bigtitle" style="color:${GRAR[ng.r][1]}">${big?"대성공! ":""}${gName(ng)}</p><p class="sub" style="text-align:center">[${GRAR[ng.r][0]}] ${GSLOT[ng.slot].name} · ${gDesc(ng)}</p>
+  <div class="row" style="justify-content:center;margin-top:12px"><button class="btn green" data-again>계속 합성</button><button class="btn lg" data-ok>확인</button></div>`,
+  m=>{m.querySelector("[data-ok]").onclick=()=>{closeModal();render()};m.querySelector("[data-again]").onclick=gFuseModal})}
 const gearToast=g=>g&&setTimeout(()=>toast(`장비 획득! [${GRAR[g.r][0]}] ${GSLOT[g.slot].names[g.r]}`),600);
 const petInc=(p,wm=1)=>STAGE_GOLD[p.stage]*spMult(p.sp)*gradeOf2(p).m*VARS[p.v].inc*wm*SPEED*(1+((p.lv||1)-1)*.03)*(1+trLv("work")*.05)*gMul(p,"inc")*workSkill(p);
 const petPow=p=>Math.round(STAGE_POW[p.stage]*spMult(p.sp)*gradeOf2(p).m*VARS[p.v].pow*(1+((p.lv||1)-1)*.06)*(1+trLv("atk")*.05)*gMul(p,"atk"));
@@ -874,8 +908,8 @@ function petsView(){return `<div class="seg">${[["pets","펫"],["gear","장비 �
 let gearSlot="all";
 function gearView(){const list=(S.gear||[]).filter(g=>gearSlot==="all"||g.slot===gearSlot).sort((a,b)=>b.r-a.r||(b.lv||0)-(a.lv||0));
  return `<div class="spread"><div class="seg">${[["all","전체"],...Object.entries(GSLOT).map(([k,v])=>[k,v.name])].map(([k,n])=>`<button aria-pressed="${gearSlot===k}" data-gslot="${k}">${n}</button>`).join("")}</div>
-  <button class="btn sm white" data-gsellall ${(S.gear||[]).some(g=>g.r===0&&g.on==null)?"":"disabled"}>안 쓰는 일반 장비 분해</button></div>
- <p class="sub">장비는 전투, 원정, 월드 보스, 아레나에서 얻어요. 펫을 눌러 장비 칸에서 끼워요. 강화하면 능력이 10%씩 올라요 (최대 +${GMAX}).</p>
+  <div class="row" style="gap:4px"><button class="btn sm red" data-gfuse>장비 합성</button><button class="btn sm white" data-gsellall ${(S.gear||[]).some(g=>g.r===0&&g.on==null)?"":"disabled"}>안 쓰는 일반 장비 분해</button></div></div>
+ <p class="sub">장비는 전투, 원정, 월드 보스, 아레나에서 얻어요. 펫을 눌러 장비 칸에서 끼워요. 강화하면 능력이 10%씩 올라요 (최대 +${GMAX}). 같은 등급 3개를 합성하면 한 단계 위 장비가 돼요. <b style="color:#FF3D8B">신화</b> 장비는 합성으로만 나와요.</p>
  ${list.length?`<div class="list">${list.map(g=>{const p=g.on!=null&&petById(g.on);return `<div class="li gli">${gIcon(g,44)}<div class="grow"><div class="t" style="font-size:16px;color:${GRAR[g.r][1]}">${gName(g)}</div><div class="sub">${GRAR[g.r][0]} ${GSLOT[g.slot].name} · ${gDesc(g)}${p?` · <b>${esc(SP[p.sp][0])} 착용 중</b>`:""}</div></div>
   <div class="row" style="gap:4px">${(g.lv||0)<GMAX?`<button class="btn sm" data-gup="${g.id}" ${S.gold<gUpCost(g)?"disabled":""}>강화 ${fmt(gUpCost(g))}</button>`:'<span class="pill">최대</span>'}${p?"":`<button class="btn sm white" data-gsell="${g.id}">분해</button>`}</div></div>`}).join("")}</div>`:`<div class="empty">아직 장비가 없어요. 전투에서 이기면 가끔 떨어져요</div>`}`}
 function pickGear(p,slot){const cur=gOf(p).find(g=>g.slot===slot);const list=(S.gear||[]).filter(g=>g.slot===slot&&g!==cur).sort((a,b)=>b.r-a.r||(b.lv||0)-(a.lv||0));
@@ -1535,6 +1569,7 @@ document.addEventListener("click",e=>{
  if(d.rtab){recTab=d.rtab;return render()}
  if(d.title!=null&&tab==="rec"){if(d.title&&!ONCE.some(o=>o[4]===d.title&&S.once[o[0]]))return;S.title=d.title;markDirty();lastRankWrite=0;render();return toast(d.title?`칭호 「${d.title}」를 달았어요`:"칭호를 뗐어요")}
  if(t.hasAttribute("data-tfight"))return towerFight();
+ if(t.hasAttribute("data-gfuse"))return gFuseModal();
  if(t.hasAttribute("data-moonfuse")){sfx("fuse");const me=S.eggs.filter(x=>x.egg==="moon");if(me.length<5)return;const used=new Set(me.slice(0,5));S.eggs=S.eggs.filter(x=>!used.has(x));S.eggs.push({id:S.nextId++,egg:"moonfull"});markDirty();render();
   return openModal(`<div class="stage-bg moonfx" style="height:220px"><div class="eggshape egg-moonfull wobble" style="width:104px;height:130px"></div></div><p class="bigtitle">🌕 월광 알 완성!</p><p class="sub" style="text-align:center">달밤 알 5개가 하나로 합쳐졌어요.<br>이 알에서는 <b>월광 늑대</b>가 반드시 태어나요. 좋은 부화 기계로 까 보세요!</p><div class="row" style="justify-content:center;margin-top:12px"><button class="btn lg" data-ok>확인</button></div>`,m=>m.querySelector("[data-ok]").onclick=closeModal)}
  if(t.hasAttribute("data-tauto")){S.team=bestTeam(towerEl(S.tower.best+1));markDirty();render();return toast("이 층에 가장 강한 3마리로 편성했어요")}
