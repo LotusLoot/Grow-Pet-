@@ -439,6 +439,11 @@ body{background:radial-gradient(rgba(255,255,255,.4) 1.6px,transparent 2px) 0 0/
 #gMsg{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}#gMsg>div{pointer-events:auto;background:var(--paper);border:3px solid var(--ink);border-radius:22px;padding:16px;width:min(330px,88%);text-align:center;box-shadow:0 6px 0 var(--ink)}
 #gMsg>.hint{background:rgba(15,20,48,.6);color:#fff;border:2px solid #fff6;box-shadow:none;font-family:var(--display);font-size:18px;width:auto;padding:10px 18px}
 .dgfloors{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}.dgf{flex:none;min-width:58px;border:2.5px solid var(--ink);border-radius:12px;background:#fff;padding:4px 6px;font:inherit;display:grid;gap:1px;cursor:pointer}.dgf b{font-family:var(--display);font-weight:400;font-size:18px}.dgf span{font-size:11px;color:#E8A000}.dgf.cur{background:var(--yolk);box-shadow:0 3px 0 var(--ink)}
+.affbox{background:linear-gradient(180deg,#FFF0F6,#fff)}
+.affb{position:absolute;right:6px;top:34px;font-size:11px;font-family:var(--display);background:#fff;border:2px solid #FF8FB8;border-radius:10px;padding:0 5px;color:#E2487F;z-index:2}
+.pc.affmax{box-shadow:0 4px 0 var(--ink),0 0 0 3px #FF8FB8,0 0 14px rgba(255,92,154,.6)}
+.hfx{position:absolute;bottom:40%;font-size:22px;animation:hfx 1.2s ease-out forwards;pointer-events:none;z-index:5}@keyframes hfx{0%{transform:translateY(0) scale(.5);opacity:0}20%{opacity:1;transform:translateY(-10px) scale(1.1)}100%{transform:translateY(-90px) scale(.8);opacity:0}}
+#view{position:relative}.patfx{animation:pat .5s ease-in-out}@keyframes pat{0%,100%{transform:scale(1)}30%{transform:scale(1.08,.92)}60%{transform:scale(.95,1.05)}}
 .el-yokai{background:linear-gradient(135deg,#DC2626,#0EA5A4)}.egg-yokai{background:radial-gradient(circle at 35% 35%,#FFE4D6,#F2734F 50%,#2A9D9B)}.egg-yokai::after{background:radial-gradient(circle,#7FFFE9 0 3px,transparent 4px) 0 0/14px 12px;height:24px;top:28%;opacity:.8}.t-yokai{--tint:#E3F7F4;--tint2:#9FDCD4}.ar-yokai{--abg1:#1F3B46;--abg2:#3E2A4F}
 .el-sweet{background:#FF8FB8}.egg-sweet{background:radial-gradient(circle at 35% 35%,#FFF0F6,#FFB8D2 50%,#B8E6FF)}
 .egg-sweet::after{background:repeating-linear-gradient(90deg,#fff 0 5px,#FF8FB8 5px 10px)}
@@ -518,8 +523,9 @@ const GRADES=[{k:"N",name:"노멀",m:1,c:"#9AA6C6"},{k:"R",name:"레어",m:1.8,c
 const INCS=[{k:"inc0",name:"기본 부화 기계",mult:1,odds:[80,18,2,0]},{k:"inc1",name:"고급 부화 기계",mult:2,odds:[40,45,13,2]},{k:"inc2",name:"황금 부화 기계",mult:4,odds:[0,50,38,12]},{k:"inc3",name:"천상 부화 기계",mult:8,odds:[0,0,55,45]}];
 const gradeOf2=p=>GRADES[p.g||0];
 const gradeChip=p=>`<span class="gr ${gradeOf2(p).k==="UR"?"ur":""}" style="background:${gradeOf2(p).c}">${gradeOf2(p).k}</span>`;
-const LOG_VER=31;
+const LOG_VER=32;
 const UPDATE_LOG=[
+ ["4.3","💕 호감도! 펫 창에서 쓰다듬기 (하루 3번) · 간식(먹이 +1)·특식(고급 먹이 +5)으로도 올라요","하트 Lv.1~10 · 레벨마다 수익·전투력 +2% (최대 +20%) · 최고 레벨이 되면 핑크빛 테두리","쓰다듬으면 10% 확률로 펫이 선물을 물어와요 · 펫 탭의 「모두 쓰다듬기」로 한번에!","새 칭호: 최고의 단짝, 펫 사랑꾼"],
  ["4.2","😇 쿠폰 전용 몬스터 천사물개 (신화 UR) 추가","천사물개 스킬 「천사의 가호」 · 갖고만 있어도 펫 던전 하트 +1 (전설 +2), 펫 달리기에서 부딪혀도 1번 버티기 (전설 2번)"],
  ["4.1","🛸 쿠폰 전용 몬스터 삐삐 (신화 UR) 추가 · 쿠폰으로만 얻는 전용 변이 「반짝」을 가진 채로 와요 (수익 ×10, 전투력 ×3)","삐삐 스킬 「별가루 행운」 · 갖고만 있어도 부화 변이 확률 ×2 (전설 ×3)"],
  ["4.0","🗡️ 실력 메인 콘텐츠: 펫 던전 (전투 → 던전) · 손가락으로 펫을 움직여 탄막을 피하고, 공격은 자동! 26초 버티면 보스 등장","남은 하트만큼 별 ★ · 층마다 첫 클리어 보상, 별 3개 보너스 · 펫이 강할수록 공격력 배율이 올라가요","🏃 펫 달리기 (모험 → 달리기) · 탭해서 점프, 2단 점프로 장애물 피하고 코인 모으기 · 하루 보상 도전 5번, 이후엔 연습","주간 달리기 랭킹 · 랭킹에 던전·달리기 추가 · 새 칭호 5개 (날쌘돌이, 달리기 왕, 던전 탐험가, 탄막 마스터, 완벽주의자)"],
@@ -593,7 +599,7 @@ ONCE.push(["vceles","천상 변이 첫 발견",{trans:2},s=>hasVar(s,"celestial"
  ["gold1e8","누적 골드 1억",{awaken:5},s=>s.stats.totalGold>=1e8,"부자"],["gold1e10","누적 골드 100억",{trans:5},s=>s.stats.totalGold>=1e10,"재벌"],["win1000","전투 1,000승",{awaken:5,trans:1},s=>s.stats.wins>=1000,"백전노장"],
  ["arenaG","아레나 골드 달성",{awaken:3},s=>s.arena.best>=1250,"아레나 강자"],["arenaM","아레나 마스터 달성",{trans:3},s=>s.arena.best>=1700,"아레나 챔피언"],
  ["tw10","무한의 탑 10층",{awaken:3},s=>s.tower.best>=10,"탑 등반가"],["tw30","무한의 탑 30층",{awaken:5,trans:1},s=>s.tower.best>=30,"구름 위 산책자"],["tw50","무한의 탑 50층",{trans:3,prism:1},s=>s.tower.best>=50,"하늘탑 정복자"],["tw100","무한의 탑 100층",{trans:10,prism:3},s=>s.tower.best>=100,"무한의 지배자"],
- ["wolf","월광 늑대 부화",{trans:5},s=>!!s.codex.wolf,"달의 주인"],["gmyth","신화 장비 만들기",{trans:3},s=>(s.gear||[]).some(g=>g.r>=4),"전설의 대장장이"],["run1k","펫 달리기 1,000점",{awaken:3},s=>((s.run&&s.run.allBest)||0)>=1000,"날쌘돌이"],["run3k","펫 달리기 3,000점",{trans:2},s=>((s.run&&s.run.allBest)||0)>=3000,"달리기 왕"],["dg10","펫 던전 10층",{awaken:5},s=>((s.dungeon&&s.dungeon.best)||0)>=10,"던전 탐험가"],["dg30","펫 던전 30층",{trans:5},s=>((s.dungeon&&s.dungeon.best)||0)>=30,"탄막 마스터"],["dg3s","던전 별 3개 10층",{trans:2},s=>Object.values((s.dungeon&&s.dungeon.stars)||{}).filter(v=>v>=3).length>=10,"완벽주의자"],["fr3","친구 3명 추가",{gold:10000},s=>s.friends.length>=3,"인싸"],["gift20","친구에게 선물 20번 보내기",{awaken:3},s=>(s.stats.gifts||0)>=20,"선물 요정"]);
+ ["wolf","월광 늑대 부화",{trans:5},s=>!!s.codex.wolf,"달의 주인"],["gmyth","신화 장비 만들기",{trans:3},s=>(s.gear||[]).some(g=>g.r>=4),"전설의 대장장이"],["run1k","펫 달리기 1,000점",{awaken:3},s=>((s.run&&s.run.allBest)||0)>=1000,"날쌘돌이"],["run3k","펫 달리기 3,000점",{trans:2},s=>((s.run&&s.run.allBest)||0)>=3000,"달리기 왕"],["dg10","펫 던전 10층",{awaken:5},s=>((s.dungeon&&s.dungeon.best)||0)>=10,"던전 탐험가"],["dg30","펫 던전 30층",{trans:5},s=>((s.dungeon&&s.dungeon.best)||0)>=30,"탄막 마스터"],["dg3s","던전 별 3개 10층",{trans:2},s=>Object.values((s.dungeon&&s.dungeon.stars)||{}).filter(v=>v>=3).length>=10,"완벽주의자"],["aff10","호감도 MAX 펫 만들기",{trans:3},s=>s.pets.some(p=>(p.aff||0)>=850),"최고의 단짝"],["aff5x10","호감도 Lv.5 이상 펫 10마리",{awaken:10},s=>s.pets.filter(p=>(p.aff||0)>=160).length>=10,"펫 사랑꾼"],["fr3","친구 3명 추가",{gold:10000},s=>s.friends.length>=3,"인싸"],["gift20","친구에게 선물 20번 보내기",{awaken:3},s=>(s.stats.gifts||0)>=20,"선물 요정"]);
 const ttlChip=t=>t?`<span class="ttl">${esc(t)}</span>`:"";
 const SLOT_BASE=40,SLOT_MAXUP=6;
 const maxPets=()=>SLOT_BASE+((S&&S.slots)||0)*10;
@@ -689,6 +695,18 @@ function nightMul(){const t=Date.now();if(t-_nm.t<5000)return _nm.v;const h=new 
 function mochiGift(){if(!S.pets||S.mochiDay===today())return;const ms=S.pets.filter(q=>q.sp==="mochi"&&skillOn(q));if(!ms.length)return;S.mochiDay=today();const r={awaken:3};if(ms.some(q=>q.stage>=5))r.trans=1;give(r);markDirty();setTimeout(()=>toast(`🍡 떡방아! 달토끼 떡이 각성석 3개${r.trans?", 초월석 1개":""}를 줬어요`),600)}
 function luckMul(){let b=0;for(const q of S.pets)if(SKILLS[q.sp]&&SKILLS[q.sp].type==="luck"&&skillOn(q))b=Math.max(b,skillVal(q));return 1+b}
 function guardVal(){let b=0;for(const q of S.pets)if(SKILLS[q.sp]&&SKILLS[q.sp].type==="guard"&&skillOn(q))b=Math.max(b,skillVal(q));return b}
+const AFF_REQ=[0,10,30,60,100,160,240,340,470,630,850],AFF_MAX=10,PAT_DAY=3;
+const affLv=p=>{const a=p.aff||0;let l=0;for(let i=1;i<=AFF_MAX;i++)if(a>=AFF_REQ[i])l=i;return l};
+const affMul=p=>1+affLv(p)*.02;
+const patsLeft=p=>p.pd===today()?Math.max(0,PAT_DAY-(p.pn||0)):PAT_DAY;
+function addAff(p,n){const l0=affLv(p);p.aff=Math.min(AFF_REQ[AFF_MAX],(p.aff||0)+n);const l1=affLv(p);return l1>l0?l1:0}
+function patPet(p){if(patsLeft(p)<1)return null;if(p.pd!==today()){p.pd=today();p.pn=0}p.pn++;const up=addAff(p,2);let gift=null;if(Math.random()<.1){gift=Math.random()<.25?{awaken:1}:Math.random()<.5?{prem:2}:{food:3};give(gift)}return{up,gift}}
+function heartFx(el,n=6){if(!el)return;for(let i=0;i<n;i++){const h=document.createElement("span");h.className="hfx";h.textContent=Math.random()<.5?"💗":"💕";h.style.left=(30+Math.random()*40)+"%";h.style.animationDelay=(i*70)+"ms";el.appendChild(h);setTimeout(()=>h.remove(),1300)}}
+function affBox(p){const l=affLv(p),a=p.aff||0,nx=AFF_REQ[l+1],pr=nx?(a-AFF_REQ[l])/(nx-AFF_REQ[l]):1,pl=patsLeft(p);
+ return `<div class="enh affbox"><div class="spread"><b style="font-family:var(--display);font-weight:400;font-size:18px">호감도 <span style="color:#FF5C9A">${"♥".repeat(l)}</span><span style="color:#E6D3DD">${"♥".repeat(AFF_MAX-l)}</span></b><span class="sub">Lv.${l} · 수익·전투력 +${l*2}%</span></div>
+  <div class="bar" style="margin:6px 0"><i style="width:${pr*100}%;background:linear-gradient(90deg,#FF9AC4,#FF5C9A)"></i></div>
+  <div class="sub" style="text-align:right">${nx?`다음 하트까지 ${nx-a}`:"💖 최고의 단짝!"}</div>
+  ${l<AFF_MAX?`<div class="row" style="gap:6px;justify-content:center;margin-top:6px"><button class="btn sm red" data-pat ${pl<1?"disabled":""}>✋ 쓰다듬기 (${pl}/${PAT_DAY})</button><button class="btn sm white" data-snack="food" ${have("food")<1?"disabled":""}>${itIcon("food")} 간식 +1</button><button class="btn sm white" data-snack="prem" ${have("prem")<1?"disabled":""}>${itIcon("prem")} 특식 +5</button></div>`:""}</div>`}
 function offMul(){let b=0;for(const q of S.pets)if(q.work!=null&&SKILLS[q.sp]&&SKILLS[q.sp].type==="offline"&&skillOn(q))b=Math.max(b,skillVal(q));return 1+b}
 /* ================= 장비 ================= */
 const GSLOT={hat:{name:"모자",names:["낡은 모자","탐험가 모자","마법사 모자","왕관 모자","별무리 왕관"],atk:[5,10,18,30,50],inc:[0,0,0,0,0]},
@@ -740,8 +758,8 @@ function doGFuse(r,slot){const ng=fuseCore(r,slot);if(!ng)return;const big=ng.bi
   <div class="row" style="justify-content:center;margin-top:12px"><button class="btn green" data-again>계속 합성</button><button class="btn lg" data-ok>확인</button></div>`,
   m=>{m.querySelector("[data-ok]").onclick=()=>{closeModal();render()};m.querySelector("[data-again]").onclick=gFuseModal})}
 const gearToast=g=>g&&setTimeout(()=>toast(`장비 획득! [${GRAR[g.r][0]}] ${GSLOT[g.slot].names[g.r]}`),600);
-const petInc=(p,wm=1)=>STAGE_GOLD[p.stage]*spMult(p.sp)*gradeOf2(p).m*VARS[p.v].inc*wm*SPEED*(1+((p.lv||1)-1)*.03)*(1+trLv("work")*.05)*gMul(p,"inc")*workSkill(p);
-const petPow=p=>Math.round(STAGE_POW[p.stage]*spMult(p.sp)*gradeOf2(p).m*VARS[p.v].pow*(1+((p.lv||1)-1)*.06)*(1+trLv("atk")*.05)*gMul(p,"atk"));
+const petInc=(p,wm=1)=>affMul(p)*STAGE_GOLD[p.stage]*spMult(p.sp)*gradeOf2(p).m*VARS[p.v].inc*wm*SPEED*(1+((p.lv||1)-1)*.03)*(1+trLv("work")*.05)*gMul(p,"inc")*workSkill(p);
+const petPow=p=>Math.round(affMul(p)*STAGE_POW[p.stage]*spMult(p.sp)*gradeOf2(p).m*VARS[p.v].pow*(1+((p.lv||1)-1)*.06)*(1+trLv("atk")*.05)*gMul(p,"atk"));
 const sulking=p=>false;
 const lookOf=p=>Math.min(p.look??p.stage,p.stage);
 function placeName(p){if(p.work!=null)return WORKS[p.work].name;if(p.exp!=null)return EXPS[p.exp].name;return null}
@@ -839,9 +857,9 @@ function rollDay(){const t=today();if(S.daily.day!==t){S.daily.day=t;S.daily.m={
 const _rd=rollDay;rollDay=function(){_rd();try{mochiGift()}catch(e){}};
 const missionsDone=()=>{const m=S.daily.m;return m.enh>=3&&m.exp>=2&&m.bat>=5};
 function petCard(p,sub){const lk=lookOf(p);
- return `<button class="pc r${p.stage} t-${petEl(p)} ${p.sp==="nova"?"novac":p.sp==="wolf"?"wolfc":""}" data-pet="${p.id}"><div class="in">
+ return `<button class="pc r${p.stage} t-${petEl(p)} ${p.sp==="nova"?"novac":p.sp==="wolf"?"wolfc":""} ${affLv(p)>=AFF_MAX?"affmax":""}" data-pet="${p.id}"><div class="in">
   <span class="tl">${elBadge(petEl(p))}</span><span class="tr">${gradeChip(p)}</span>
-  ${sprite(p.sp,lk,p.v)}
+  ${sprite(p.sp,lk,p.v)}${affLv(p)?`<span class="affb">💗${affLv(p)}</span>`:""}
   <span class="st">${STAGES.map((_,i)=>`<i class="${i<=p.stage?"on":""}"></i>`).join("")}</span>
   <span class="nm">${p.v!=="normal"?`<em class="vn">${VARS[p.v].name}</em> `:""}${esc(SP[p.sp][0])}</span><span class="rib">${STAGES[p.stage]} · Lv.${p.lv||1}</span>
   <span class="pw">${sub??(sulking(p)?"삐짐 중":placeName(p)||"전투력 "+fmt(petPow(p)))}</span></div></button>`}
@@ -938,7 +956,7 @@ function petListView(){
  const list=S.pets.filter(p=>petFilter==="all"||petEl(p)===petFilter);
  const sorts={stage:(a,b)=>b.stage-a.stage||petPow(b)-petPow(a),pow:(a,b)=>petPow(b)-petPow(a),inc:(a,b)=>petInc(b)-petInc(a),new:(a,b)=>b.id-a.id};
  list.sort(sorts[petSort]);
- return `<div class="spread"><h2 class="h">내 펫 <span class="sub mono">${S.pets.length}/${maxPets()}</span>${(S.slots||0)<SLOT_MAXUP?`<button class="btn sm green" data-slotup style="margin-left:6px">+10칸</button>`:""}</h2><button class="btn sm ${selMode?"white":"red"}" data-selmode>${selMode?"선택 끝내기":"여러 마리 보내기"}</button>
+ return `<div class="spread"><h2 class="h">내 펫 <span class="sub mono">${S.pets.length}/${maxPets()}</span>${(S.slots||0)<SLOT_MAXUP?`<button class="btn sm green" data-slotup style="margin-left:6px">+10칸</button>`:""}</h2><button class="btn sm white" data-patall ${S.pets.some(q=>patsLeft(q)>0&&affLv(q)<AFF_MAX)?"":"disabled"} style="margin-right:4px">✋ 모두 쓰다듬기</button><button class="btn sm ${selMode?"white":"red"}" data-selmode>${selMode?"선택 끝내기":"여러 마리 보내기"}</button>
   <div class="seg">${[["stage","단계"],["pow","전투력"],["inc","수익"],["new","최신"]].map(([k,n])=>`<button aria-pressed="${petSort===k}" data-psort="${k}">${n}</button>`).join("")}</div></div>
  <div class="seg">${[["all","전체"],...Object.entries(EL)].map(([k,n])=>`<button aria-pressed="${petFilter===k}" data-pfilter="${k}">${n}</button>`).join("")}</div>
  ${selMode?`<div class="selhint"><span>보낼 펫을 눌러 고르세요. 원정 중인 펫은 고를 수 없어요.</span><div class="row"><button class="btn sm white" data-selq="n">노멀 전부</button><button class="btn sm white" data-selq="h">해츨링 전부</button><button class="btn sm white" data-selq="c">선택 해제</button></div></div>`:""}
@@ -1242,7 +1260,7 @@ function petModal(id,fx){
  const m=openModal(`${head(gradeChip(p)+" "+esc(SP[p.sp][0])+(p.v!=="normal"?` <span class="pill">${VARS[p.v].name}</span>`:""))}
   <div class="stage-bg r${p.stage} t-${petEl(p)}" style="margin-top:10px"><div class="pedestal"></div>${p.stage===5||p.v!=="normal"?`<div class="rays ${p.v!=="normal"?p.v:""}"></div>`:""}<div class="hero ${fx||""}" id="hero">${sprite(p.sp,lk,p.v)}</div>
    <div style="position:absolute;left:10px;top:10px;z-index:2" class="row">${elBadge(petEl(p))}<span class="pill">${STAGES[p.stage]}</span>${sulking(p)?`<span class="pill" style="background:var(--coral);color:#fff">삐짐 <span data-until="${p.sulk}"></span></span>`:""}</div></div>
-  <div class="statrow"><div>전투력<b class="mono">${fmt(petPow(p))}</b></div><div>초당 골드<b class="mono">${fmtS(petInc(p,1)/60)}</b></div><div>위치<b style="font-size:14px">${esc(placeName(p)||"쉬는 중")}</b></div></div>
+  ${affBox(p)}<div class="statrow"><div>전투력<b class="mono">${fmt(petPow(p))}</b></div><div>초당 골드<b class="mono">${fmtS(petInc(p,1)/60)}</b></div><div>위치<b style="font-size:14px">${esc(placeName(p)||"쉬는 중")}</b></div></div>
   <div class="enh" id="enh">${E?`<div class="spread"><b style="font-family:var(--display);font-weight:400;font-size:18px">${STAGES[p.stage]} → ${STAGES[p.stage+1]}</b><span class="pill" style="font-size:14px">성공률 ${Math.round(rate*100)}%</span></div>
    <div class="cost">${costChips(E.cost)}</div>
    <button class="btn lg" data-enh ${!canPay(E.cost)?"disabled":""}>강화하기</button>
@@ -1269,6 +1287,8 @@ function petModal(id,fx){
   </div>`,m=>{
   m.querySelector("[data-x]").onclick=closeModal;
   m.querySelector("[data-enh]")?.addEventListener("click",()=>doEnhance(p));
+  m.querySelector("[data-pat]")?.addEventListener("click",()=>{const r=patPet(p);if(!r)return;markDirty();sfx("reward");const sc=m.scrollTop;const mm=petModal(p.id);mm.scrollTop=sc;const h=mm.querySelector("#hero");h&&h.classList.add("patfx");heartFx(mm.querySelector(".stage-bg"));if(r.up){sfx("levelup");toast(`💗 호감도 Lv.${r.up}! ${SP[p.sp][0]}와 더 친해졌어요`)}if(r.gift)setTimeout(()=>toast(`🎁 ${SP[p.sp][0]}가 ${rewardText(r.gift)}을(를) 물어왔어요!`),400);render()});
+  m.querySelectorAll("[data-snack]").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.snack;if(!pay({[k]:1}))return;const up=addAff(p,k==="prem"?5:1);markDirty();sfx("coin");const sc=m.scrollTop;const mm=petModal(p.id);mm.scrollTop=sc;heartFx(mm.querySelector(".stage-bg"),3);if(up){sfx("levelup");toast(`💗 호감도 Lv.${up}!`)}render()}));
   m.querySelector("[data-lv1]")?.addEventListener("click",()=>levelUp(p,1));
   m.querySelector("[data-lvmax]")?.addEventListener("click",()=>levelUp(p,999));
   m.querySelector("[data-fuse]")?.addEventListener("click",()=>pickFuse(p));
@@ -1762,6 +1782,8 @@ document.addEventListener("click",e=>{
  if(d.fget){const td=today(),r=frRow(d.fget);if(!r||!r.gifts||r.gifts[myCode()]!==td||S.fgot[d.fget]===td)return;for(const k in S.fgot)if(S.fgot[k]!==td)delete S.fgot[k];S.fgot[d.fget]=td;const g={gold:5000,food:5};if(Math.random()<.15)g.awaken=1;give(g);markDirty();render();return showRewards("친구 선물!",g,`${esc(rankNames[r.id]||r.name||"친구")}가 보낸 선물이에요`)}
  if(d.fborrow){const td=today(),r=frRow(d.fborrow);if(!r||!r.pet||!SP[r.pet.sp])return;if(S.help&&S.help.day===td)return toast("오늘은 이미 펫을 빌렸어요");S.help={day:td,left:5,code:d.fborrow,name:String(rankNames[r.id]||r.name||"친구").slice(0,12),pet:{sp:r.pet.sp,st:r.pet.st,v:r.pet.v,pow:Math.min(+r.pet.pow||0,1e12)}};markDirty();render();return toast(`🤝 ${SP[r.pet.sp][0]}를 빌렸어요! 오늘 전투 5번 함께해요`)}
  if(d.pet)return petModal(+d.pet);
+ if(t.hasAttribute("data-patall")){let n=0,ups=0;const gifts={};for(const q of S.pets){if(affLv(q)>=AFF_MAX)continue;while(patsLeft(q)>0){const r=patPet(q);n++;if(r.up)ups++;if(r.gift)for(const k in r.gift)gifts[k]=(gifts[k]||0)+r.gift[k]}}if(!n)return;markDirty();render();sfx("reward");heartFx($("#view"),10);
+  const gt=rewardText(gifts);return toast(`✋ ${n}번 쓰다듬었어요${ups?` · 호감도 레벨 업 ${ups}번`:""}${gt?` · 선물: ${gt}`:""}`)}
  if(t.hasAttribute("data-selmode")){selMode=!selMode;sel.clear();return render()}
  if(d.selq){if(d.selq==="c")sel.clear();else S.pets.filter(p=>p.exp==null&&(petFilter==="all"||petEl(p)===petFilter)&&(d.selq==="n"?(p.g||0)===0:p.stage===0)).forEach(p=>sel.add(p.id));return render()}
  if(t.hasAttribute("data-bulkgo"))return bulkAdopt();
