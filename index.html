@@ -444,6 +444,11 @@ body{background:radial-gradient(rgba(255,255,255,.4) 1.6px,transparent 2px) 0 0/
 .pc.affmax{box-shadow:0 4px 0 var(--ink),0 0 0 3px #FF8FB8,0 0 14px rgba(255,92,154,.6)}
 .hfx{position:absolute;bottom:40%;font-size:22px;animation:hfx 1.2s ease-out forwards;pointer-events:none;z-index:5}@keyframes hfx{0%{transform:translateY(0) scale(.5);opacity:0}20%{opacity:1;transform:translateY(-10px) scale(1.1)}100%{transform:translateY(-90px) scale(.8);opacity:0}}
 #view{position:relative}.patfx{animation:pat .5s ease-in-out}@keyframes pat{0%,100%{transform:scale(1)}30%{transform:scale(1.08,.92)}60%{transform:scale(.95,1.05)}}
+.trcol{display:grid;gap:6px;margin-top:12px;padding:12px;border:2px solid var(--ink);border-radius:16px;background:#FFFDF5}
+.trit{display:flex;align-items:center;gap:8px;font-size:14px}.trit>.it,.trit>span:first-child{flex:0 0 26px;width:26px;height:26px}.trit span{flex:1;min-width:0}.trit input{width:90px;font:inherit;font-family:var(--display);padding:4px 8px;border:2px solid var(--ink);border-radius:10px;text-align:right}
+.trgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px;max-height:220px;overflow:auto}
+.trpet{border:2px solid #C9D0E8;border-radius:12px;background:#fff;padding:4px;display:grid;justify-items:center;gap:2px;cursor:pointer;font:inherit}.trpet .sprite{width:52px;height:52px}.trpet small{font-size:10px;line-height:1.2;text-align:center}
+.trpet.on{border-color:var(--coral);background:#FFE9E6;box-shadow:0 0 0 2px var(--coral)}
 .el-yokai{background:linear-gradient(135deg,#DC2626,#0EA5A4)}.egg-yokai{background:radial-gradient(circle at 35% 35%,#FFE4D6,#F2734F 50%,#2A9D9B)}.egg-yokai::after{background:radial-gradient(circle,#7FFFE9 0 3px,transparent 4px) 0 0/14px 12px;height:24px;top:28%;opacity:.8}.t-yokai{--tint:#E3F7F4;--tint2:#9FDCD4}.ar-yokai{--abg1:#1F3B46;--abg2:#3E2A4F}
 .el-sweet{background:#FF8FB8}.egg-sweet{background:radial-gradient(circle at 35% 35%,#FFF0F6,#FFB8D2 50%,#B8E6FF)}
 .egg-sweet::after{background:repeating-linear-gradient(90deg,#fff 0 5px,#FF8FB8 5px 10px)}
@@ -523,8 +528,9 @@ const GRADES=[{k:"N",name:"노멀",m:1,c:"#9AA6C6"},{k:"R",name:"레어",m:1.8,c
 const INCS=[{k:"inc0",name:"기본 부화 기계",mult:1,odds:[80,18,2,0]},{k:"inc1",name:"고급 부화 기계",mult:2,odds:[40,45,13,2]},{k:"inc2",name:"황금 부화 기계",mult:4,odds:[0,50,38,12]},{k:"inc3",name:"천상 부화 기계",mult:8,odds:[0,0,55,45]}];
 const gradeOf2=p=>GRADES[p.g||0];
 const gradeChip=p=>`<span class="gr ${gradeOf2(p).k==="UR"?"ur":""}" style="background:${gradeOf2(p).c}">${gradeOf2(p).k}</span>`;
-const LOG_VER=32;
+const LOG_VER=33;
 const UPDATE_LOG=[
+ ["4.4","🤝 거래! 친구와 펫, 장비, 골드, 재료를 모두 주고받을 수 있어요 (기록 → 친구 → 거래)","주고 싶은 것과 받고 싶은 것(친구의 펫 포함)을 골라 제안 · 친구가 수락하면 자동으로 교환","보낸 것은 수락될 때까지 맡겨 두고, 거절·취소하면 돌려받아요 · 새 칭호: 상인, 거래의 달인"],
  ["4.3","💕 호감도! 펫 창에서 쓰다듬기 (하루 3번) · 간식(먹이 +1)·특식(고급 먹이 +5)으로도 올라요","하트 Lv.1~10 · 레벨마다 수익·전투력 +2% (최대 +20%) · 최고 레벨이 되면 핑크빛 테두리","쓰다듬으면 10% 확률로 펫이 선물을 물어와요 · 펫 탭의 「모두 쓰다듬기」로 한번에!","새 칭호: 최고의 단짝, 펫 사랑꾼"],
  ["4.2","😇 쿠폰 전용 몬스터 천사물개 (신화 UR) 추가","천사물개 스킬 「천사의 가호」 · 갖고만 있어도 펫 던전 하트 +1 (전설 +2), 펫 달리기에서 부딪혀도 1번 버티기 (전설 2번)"],
  ["4.1","🛸 쿠폰 전용 몬스터 삐삐 (신화 UR) 추가 · 쿠폰으로만 얻는 전용 변이 「반짝」을 가진 채로 와요 (수익 ×10, 전투력 ×3)","삐삐 스킬 「별가루 행운」 · 갖고만 있어도 부화 변이 확률 ×2 (전설 ×3)"],
@@ -599,7 +605,7 @@ ONCE.push(["vceles","천상 변이 첫 발견",{trans:2},s=>hasVar(s,"celestial"
  ["gold1e8","누적 골드 1억",{awaken:5},s=>s.stats.totalGold>=1e8,"부자"],["gold1e10","누적 골드 100억",{trans:5},s=>s.stats.totalGold>=1e10,"재벌"],["win1000","전투 1,000승",{awaken:5,trans:1},s=>s.stats.wins>=1000,"백전노장"],
  ["arenaG","아레나 골드 달성",{awaken:3},s=>s.arena.best>=1250,"아레나 강자"],["arenaM","아레나 마스터 달성",{trans:3},s=>s.arena.best>=1700,"아레나 챔피언"],
  ["tw10","무한의 탑 10층",{awaken:3},s=>s.tower.best>=10,"탑 등반가"],["tw30","무한의 탑 30층",{awaken:5,trans:1},s=>s.tower.best>=30,"구름 위 산책자"],["tw50","무한의 탑 50층",{trans:3,prism:1},s=>s.tower.best>=50,"하늘탑 정복자"],["tw100","무한의 탑 100층",{trans:10,prism:3},s=>s.tower.best>=100,"무한의 지배자"],
- ["wolf","월광 늑대 부화",{trans:5},s=>!!s.codex.wolf,"달의 주인"],["gmyth","신화 장비 만들기",{trans:3},s=>(s.gear||[]).some(g=>g.r>=4),"전설의 대장장이"],["run1k","펫 달리기 1,000점",{awaken:3},s=>((s.run&&s.run.allBest)||0)>=1000,"날쌘돌이"],["run3k","펫 달리기 3,000점",{trans:2},s=>((s.run&&s.run.allBest)||0)>=3000,"달리기 왕"],["dg10","펫 던전 10층",{awaken:5},s=>((s.dungeon&&s.dungeon.best)||0)>=10,"던전 탐험가"],["dg30","펫 던전 30층",{trans:5},s=>((s.dungeon&&s.dungeon.best)||0)>=30,"탄막 마스터"],["dg3s","던전 별 3개 10층",{trans:2},s=>Object.values((s.dungeon&&s.dungeon.stars)||{}).filter(v=>v>=3).length>=10,"완벽주의자"],["aff10","호감도 MAX 펫 만들기",{trans:3},s=>s.pets.some(p=>(p.aff||0)>=850),"최고의 단짝"],["aff5x10","호감도 Lv.5 이상 펫 10마리",{awaken:10},s=>s.pets.filter(p=>(p.aff||0)>=160).length>=10,"펫 사랑꾼"],["fr3","친구 3명 추가",{gold:10000},s=>s.friends.length>=3,"인싸"],["gift20","친구에게 선물 20번 보내기",{awaken:3},s=>(s.stats.gifts||0)>=20,"선물 요정"]);
+ ["wolf","월광 늑대 부화",{trans:5},s=>!!s.codex.wolf,"달의 주인"],["gmyth","신화 장비 만들기",{trans:3},s=>(s.gear||[]).some(g=>g.r>=4),"전설의 대장장이"],["run1k","펫 달리기 1,000점",{awaken:3},s=>((s.run&&s.run.allBest)||0)>=1000,"날쌘돌이"],["run3k","펫 달리기 3,000점",{trans:2},s=>((s.run&&s.run.allBest)||0)>=3000,"달리기 왕"],["dg10","펫 던전 10층",{awaken:5},s=>((s.dungeon&&s.dungeon.best)||0)>=10,"던전 탐험가"],["dg30","펫 던전 30층",{trans:5},s=>((s.dungeon&&s.dungeon.best)||0)>=30,"탄막 마스터"],["dg3s","던전 별 3개 10층",{trans:2},s=>Object.values((s.dungeon&&s.dungeon.stars)||{}).filter(v=>v>=3).length>=10,"완벽주의자"],["aff10","호감도 MAX 펫 만들기",{trans:3},s=>s.pets.some(p=>(p.aff||0)>=850),"최고의 단짝"],["aff5x10","호감도 Lv.5 이상 펫 10마리",{awaken:10},s=>s.pets.filter(p=>(p.aff||0)>=160).length>=10,"펫 사랑꾼"],["trade1","첫 거래 성공",{gold:5000},s=>(s.stats.trades||0)>=1,"상인"],["trade10","거래 10번 성공",{awaken:5},s=>(s.stats.trades||0)>=10,"거래의 달인"],["fr3","친구 3명 추가",{gold:10000},s=>s.friends.length>=3,"인싸"],["gift20","친구에게 선물 20번 보내기",{awaken:3},s=>(s.stats.gifts||0)>=20,"선물 요정"]);
 const ttlChip=t=>t?`<span class="ttl">${esc(t)}</span>`:"";
 const SLOT_BASE=40,SLOT_MAXUP=6;
 const maxPets=()=>SLOT_BASE+((S&&S.slots)||0)*10;
@@ -640,7 +646,7 @@ function rewardText(r){return Object.entries(r).filter(([,v])=>v>0).map(([k,v])=
 function freshState(){return {v:2,gold:300,items:{food:10,prem:0,awaken:0,trans:0,inc0:1,inc1:0,inc2:0,inc3:0,skip:1},pend:{gold:0,awaken:0,trans:0},
  eggs:[{id:1,egg:"grass"}],pets:[],works:[true,false,false,false,false],exps:{},team:[],cleared:-1,codex:{},album:[],
  daily:{day:"",attended:"",streak:0,m:{enh:0,exp:0,bat:0},claimed:false},weekly:{week:"",best:0,day:"",tries:0,claimed:false},
- nick:"",train:{atk:0,work:0,exp:0},gear:[],event:{dmg:0,hits:0,total:0,day:"",claimed:{}},arena:{pts:1000,best:1000,week:"",day:"",tickets:5,w:0,l:0,claimed:false,log:[]},once:{},stats:{totalGold:0,adopted:0,bestStage:-1,wins:0,gifts:0},tower:{best:0},title:"",friends:[],fsent:{},fgot:{},help:null,lastTick:now(),nextId:2,savedAt:0}}
+ nick:"",train:{atk:0,work:0,exp:0},gear:[],event:{dmg:0,hits:0,total:0,day:"",claimed:{}},arena:{pts:1000,best:1000,week:"",day:"",tickets:5,w:0,l:0,claimed:false,log:[]},once:{},stats:{totalGold:0,adopted:0,bestStage:-1,wins:0,gifts:0},tower:{best:0},title:"",friends:[],fsent:{},fgot:{},help:null,tout:{},tresp:{},lastTick:now(),nextId:2,savedAt:0}}
 let S=freshState();
 const have=k=>k==="gold"?S.gold:(S.items[k]||0);
 function give(r){for(const [k,v] of Object.entries(r)){if(!v)continue;if(k==="gold"){S.gold+=v;S.stats.totalGold+=v}else S.items[k]=(S.items[k]||0)+v}}
@@ -1189,14 +1195,14 @@ const myCode=()=>{if(!UID)return "";let h=5381,h2=7;for(const c of String(UID)){
 const myName=()=>String(rankNames[UID]||S.nick||"플레이어").slice(0,12);
 function bestPetSnap(){let b=null;for(const p of S.pets)if(!b||petPow(p)>petPow(b))b=p;return b?{sp:b.sp,st:lookOf(b),stage:b.stage,v:b.v,pow:petPow(b)}:null}
 async function writeFriend(){if(!DB||!UID||!dbWritable)return;const td=today(),gifts={};for(const c in S.fsent)if(S.fsent[c]===td)gifts[c]=td;
- try{await DB.doc("friends/"+UID).set({code:myCode(),name:myName(),ttl:S.title||"",pet:bestPetSnap(),tower:S.tower.best,legends:S.pets.filter(p=>p.stage===5).length,gifts,at:now()})}catch(e){}}
+ try{await DB.doc("friends/"+UID).set({code:myCode(),name:myName(),ttl:S.title||"",pet:bestPetSnap(),pets:S.pets.filter(p=>p.exp==null).slice(0,100).map(p=>({id:p.id,sp:p.sp,st:lookOf(p),stage:p.stage,v:p.v,g:p.g||0})),tower:S.tower.best,legends:S.pets.filter(p=>p.stage===5).length,gifts,at:now()})}catch(e){}}
 const FR_MAX=20,frRow=c=>(friendRows||[]).find(r=>r.code===c&&r.id!==UID);
 function friendView(){const td=today(),me=myCode();
  if(!DB)return `<div class="card"><div class="empty">로그인한 상태로 열어야 친구 기능을 쓸 수 있어요</div></div>`;
  return `<div class="card"><h2 class="h">내 친구 코드</h2><div class="row" style="margin-top:8px"><span class="mono" style="font-family:var(--display);font-size:30px;letter-spacing:3px">${me||"…"}</span><button class="btn sm green" data-fcopy>복사</button></div>
   <p class="sub">이 코드를 친구에게 알려 주고, 친구 코드도 아래에 넣어요. <b>서로 추가하면</b> 매일 선물을 주고받을 수 있어요.</p>
   <div class="row" style="margin-top:10px"><input id="fIn" maxlength="10" placeholder="친구 코드" autocomplete="off" style="flex:1;min-width:0;font:inherit;font-family:var(--display);font-size:17px;letter-spacing:1px;padding:8px 12px;border:var(--line);border-radius:12px;text-transform:uppercase"><button class="btn red" data-fadd>친구 추가</button></div></div>
- <div class="card"><div class="spread"><h2 class="h">친구 목록</h2><span class="sub mono">${S.friends.length}/${FR_MAX}</span></div>
+ ${tradeBox()}<div class="card"><div class="spread"><h2 class="h">친구 목록</h2><span class="sub mono">${S.friends.length}/${FR_MAX}</span></div>
   <p class="sub">선물은 친구마다 하루 1번 · 펫 빌리기는 하루 1번, 빌린 펫은 오늘 스테이지·탑 전투 5번을 함께 싸워요</p>
   ${helpOn()?`<p class="sub" style="color:#1F8A5B"><b>🤝 오늘 빌린 펫: ${esc(S.help.name)}의 ${esc(SP[S.help.pet.sp][0])} · 남은 전투 ${S.help.left}번</b></p>`:""}
   <div class="list" style="margin-top:10px">${S.friends.map(c=>{const r=frRow(c);
@@ -1205,7 +1211,7 @@ function friendView(){const td=today(),me=myCode();
    return `<div class="li" style="box-shadow:none;flex-wrap:wrap">${r.pet&&SP[r.pet.sp]?`<div style="width:54px;height:54px;flex:none">${sprite(r.pet.sp,Math.min(5,r.pet.st||0),r.pet.v)}</div>`:""}
     <div class="grow"><div class="row" style="gap:4px"><span class="t" style="font-size:16px">${esc(nm)}</span>${ttlChip(r.ttl)}</div><div class="sub">🗼 ${r.tower||0}층 · 전설 ${r.legends||0}${r.pet&&SP[r.pet.sp]?` · ${esc(SP[r.pet.sp][0])} ${fmt(r.pet.pow)}`:""}</div></div>
     <div class="row" style="gap:4px;flex-basis:100%;justify-content:flex-end">${canGet?`<button class="btn sm red" data-fget="${esc(c)}">🎁 받기</button>`:""}<button class="btn sm ${sent?"white":"green"}" data-fsend="${esc(c)}" ${sent?"disabled":""}>${sent?"보냄":"선물"}</button>
-     <button class="btn sm white" data-fborrow="${esc(c)}" ${borrowed||!r.pet?"disabled":""}>${S.help&&S.help.day===td&&S.help.code===c?"함께하는 중":"빌리기"}</button><button class="btn sm white" data-fdel="${esc(c)}" aria-label="삭제">×</button></div></div>`}).join("")||'<div class="empty">아직 친구가 없어요. 친구 코드를 넣어 보세요</div>'}</div></div>`}
+     <button class="btn sm white" data-fborrow="${esc(c)}" ${borrowed||!r.pet?"disabled":""}>${S.help&&S.help.day===td&&S.help.code===c?"함께하는 중":"빌리기"}</button><button class="btn sm" data-ftrade="${esc(c)}">거래</button><button class="btn sm white" data-fdel="${esc(c)}" aria-label="삭제">×</button></div></div>`}).join("")||'<div class="empty">아직 친구가 없어요. 친구 코드를 넣어 보세요</div>'}</div></div>`}
 let rankRows=null,rankSort="weekBest",rankNames={};
 function recView(){return `<div class="backbar"><button class="x" data-tab="home" aria-label="홈으로">‹</button><h2 class="h">기록</h2></div>
  <div class="seg">${[["rec","기록"],["ach","업적·칭호"],["friend","친구"]].map(([k,n])=>`<button aria-pressed="${recTab===k}" data-rtab="${k}">${n}</button>`).join("")}</div>`+(recTab==="ach"?achView():recTab==="friend"?friendView():recMain())}
@@ -1476,6 +1482,87 @@ function startDungeon(){const f=dgSel||1,leader=teamPets()[0];if(!leader)return 
   const h=$("#gHud");if(h)h.textContent=`${"❤️".repeat(Math.max(0,P.hp))}${"🤍".repeat(P.max-Math.max(0,P.hp))} ${boss?"보스!":Math.max(0,Math.ceil(BOSS_AT-t))+"초"}`;
   requestAnimationFrame(loop)};
  requestAnimationFrame(loop)}
+
+/* ================= 거래 ================= */
+let tradeRows=null,tdraft=null;
+const TR_ITEMS=["food","prem","awaken","trans","inc0","inc1","inc2","inc3","skip","prism","candy"];
+const petPack=p=>({sp:p.sp,v:p.v,g:p.g||0,stage:p.stage,lv:p.lv||1,look:p.look??null});
+const gearPack=g=>({slot:g.slot,r:g.r,lv:g.lv||0});
+function tradeText(o){const r={};if(o.gold)r.gold=o.gold;for(const k in o.items||{})if(o.items[k]>0)r[k]=o.items[k];
+ const parts=[rewardText(r)];if(o.pets&&o.pets.length)parts.push(o.pets.map(p=>`${VARS[p.v]&&p.v!=="normal"?VARS[p.v].name+" ":""}${SP[p.sp]?SP[p.sp][0]:"펫"}(${STAGES[p.stage]})`).join(", "));
+ if(o.gear&&o.gear.length)parts.push(o.gear.map(g=>`[${GRAR[g.r][0]}] ${GSLOT[g.slot].names[g.r]}${g.lv?" +"+g.lv:""}`).join(", "));return parts.filter(Boolean).join(" · ")||"없음"}
+const tradeEmpty=o=>!o.gold&&!Object.values(o.items||{}).some(v=>v>0)&&!(o.pets||[]).length&&!(o.gear||[]).length;
+async function writeTrade(){if(!DB||!UID||!dbWritable)return;try{await DB.doc("trade/"+UID).set({code:myCode(),offers:S.tout||{},resp:S.tresp||{},at:now()})}catch(e){}}
+function tradeGive(o){if(o.gold)give({gold:o.gold});for(const k in o.items||{})if(o.items[k]>0)give({[k]:o.items[k]});
+ for(const p of o.pets||[]){const np={id:S.nextId++,sp:p.sp,v:p.v,g:p.g,stage:p.stage,lv:p.lv,look:p.look,fails:0,work:null,exp:null,born:now(),aff:0};S.pets.push(np);note(np)}
+ for(const g of o.gear||[])S.gear.push({id:S.nextId++,slot:g.slot,r:g.r,lv:g.lv,on:null})}
+// 내 제안 확인: 상대가 수락/거절했는지
+function processTrades(){if(!tradeRows||!UID)return;S.tout=S.tout||{};S.tresp=S.tresp||{};let changed=false;
+ for(const id in S.tout){const o=S.tout[id],row=tradeRows.find(r=>r.id===o.toUid);const rs=row&&row.resp&&row.resp[id];if(!rs)continue;
+  delete S.tout[id];changed=true;
+  if(rs.s==="ok"){const got={gold:o.want.gold||0,items:o.want.items||{},pets:rs.pets||[],gear:[]};tradeGive(got);S.stats.trades=(S.stats.trades||0)+1;sfx("reward");setTimeout(()=>toast(`🤝 ${o.toName}가 거래를 수락했어요! 받은 것: ${tradeText(got)}`),300)}
+  else{tradeGive(o.give);setTimeout(()=>toast(`${o.toName}가 거래를 거절해서 보낸 것을 돌려받았어요`),300)}}
+ // 상대가 이미 처리한 내 응답은 정리
+ for(const id in S.tresp){const from=tradeRows.find(r=>r.offers&&r.offers[id]);const owner=tradeRows.find(r=>r.id===S.tresp[id].from);if(owner&&!from){delete S.tresp[id];changed=true}}
+ if(changed){markDirty();writeTrade();render()}}
+function incomingTrades(){const me=myCode(),out=[];for(const r of tradeRows||[]){if(r.id===UID||!r.offers)continue;for(const id in r.offers){const o=r.offers[id];if(o.to===me&&!(S.tresp||{})[id])out.push({id,o,from:r})}}return out}
+function tradeBox(){if(!DB)return "";const inc=incomingTrades(),outs=Object.entries(S.tout||{});
+ return `<div class="card"><div class="spread"><h2 class="h">🤝 거래함</h2><span class="sub">받은 제안 ${inc.length} · 보낸 제안 ${outs.length}</span></div>
+  ${inc.length||outs.length?`<div class="list" style="margin-top:8px">${inc.map(({id,o})=>`<div class="li" style="box-shadow:none;flex-wrap:wrap;background:#FFF6D6"><div class="grow"><div class="t" style="font-size:15px">📩 ${esc(o.fromName||"친구")}의 제안</div>
+   <div class="sub">내가 받는 것: <b>${esc(tradeText(o.give))}</b></div><div class="sub">내가 주는 것: <b>${esc(tradeText(o.want))}</b></div></div>
+   <div class="row" style="gap:4px;flex-basis:100%;justify-content:flex-end"><button class="btn sm red" data-tacc="${esc(id)}">수락</button><button class="btn sm white" data-tdec="${esc(id)}">거절</button></div></div>`).join("")}
+  ${outs.map(([id,o])=>`<div class="li" style="box-shadow:none;flex-wrap:wrap"><div class="grow"><div class="t" style="font-size:15px">📤 ${esc(o.toName)}에게 보낸 제안 <span class="pill">대기 중</span></div>
+   <div class="sub">내가 주는 것: ${esc(tradeText(o.give))}</div><div class="sub">내가 받는 것: ${esc(tradeText(o.want))}</div></div>
+   <div class="row" style="gap:4px;flex-basis:100%;justify-content:flex-end"><button class="btn sm white" data-tcan="${esc(id)}">취소하고 돌려받기</button></div></div>`).join("")}</div>`
+  :`<p class="sub" style="margin-top:6px">친구 목록에서 「거래」를 눌러 펫, 장비, 골드, 재료를 주고받을 수 있어요. 보낸 것은 친구가 수락할 때까지 맡겨 둬요.</p>`}</div>`}
+function tradeModal(code){const r=frRow(code);if(!r)return toast("친구 정보를 불러오는 중이에요");
+ tdraft=tdraft&&tdraft.code===code?tdraft:{code,gG:0,gI:{},gP:new Set(),gE:new Set(),wG:0,wI:{},wP:new Set()};const D=tdraft,fp=(r.pets||[]).filter(p=>SP[p.sp]);
+ const num=(side,k,max)=>`<label class="trit">${itIcon(k)}<span>${ITEMS[k][0]}${max!=null?` <small>(${fmt(max)})</small>`:""}</span><input type="number" min="0" ${max!=null?`max="${max}"`:""} value="${(side==="g"?D.gI:D.wI)[k]||""}" placeholder="0" data-tn="${side}:${k}"></label>`;
+ const petChip=(p,on,attr,lk)=>`<button class="trpet ${on?"on":""}" ${attr}>${sprite(p.sp,Math.min(5,lk??p.stage),p.v)}<small>${esc(SP[p.sp][0])}<br>${STAGES[p.stage]}${p.g?" "+GRADES[p.g].k:""}</small></button>`;
+ openModal(`${head("🤝 "+esc(rankNames[r.id]||r.name||"친구")+"와 거래")}
+  <div class="trcol"><h3 class="h" style="font-size:18px">내가 줄 것</h3>
+   <label class="trit">${itIcon("gold")}<span>골드 <small>(${fmt(S.gold)})</small></span><input type="number" min="0" max="${Math.floor(S.gold)}" value="${D.gG||""}" placeholder="0" data-tn="g:gold"></label>
+   ${TR_ITEMS.filter(k=>have(k)>0).map(k=>num("g",k,have(k))).join("")}
+   <p class="sub" style="margin-top:6px">펫 (원정 중인 펫은 못 보내요)</p><div class="trgrid">${S.pets.filter(p=>p.exp==null).map(p=>petChip(p,D.gP.has(p.id),`data-tgp="${p.id}"`,lookOf(p))).join("")||'<span class="sub">없음</span>'}</div>
+   <p class="sub" style="margin-top:6px">장비</p><div class="trgrid">${(S.gear||[]).map(g=>`<button class="trpet ${D.gE.has(g.id)?"on":""}" data-tge="${g.id}">${gIcon(g,40)}<small>${gName(g)}</small></button>`).join("")||'<span class="sub">없음</span>'}</div></div>
+  <div class="trcol"><h3 class="h" style="font-size:18px">내가 받을 것</h3>
+   <label class="trit">${itIcon("gold")}<span>골드</span><input type="number" min="0" value="${D.wG||""}" placeholder="0" data-tn="w:gold"></label>
+   ${TR_ITEMS.map(k=>num("w",k,null)).join("")}
+   <p class="sub" style="margin-top:6px">친구의 펫</p><div class="trgrid">${fp.map(p=>petChip(p,D.wP.has(p.id),`data-twp="${p.id}"`,p.st)).join("")||'<span class="sub">친구가 게임을 한 번 열면 펫 목록이 보여요</span>'}</div></div>
+  <div class="row" style="justify-content:center;margin-top:12px"><button class="btn lg red" data-tsend>제안 보내기</button></div>
+  <p class="sub" style="text-align:center">보낸 것은 친구가 수락할 때까지 맡겨 둬요. 거절하거나 취소하면 돌려받아요.</p>`,
+ m=>{m.querySelector("[data-x]").onclick=closeModal;
+  m.querySelectorAll("[data-tn]").forEach(i=>i.oninput=()=>{const [s,k]=i.dataset.tn.split(":");let v=Math.max(0,Math.floor(+i.value||0));if(i.max&&v>+i.max){v=+i.max;i.value=v}
+   if(k==="gold"){if(s==="g")D.gG=v;else D.wG=v}else (s==="g"?D.gI:D.wI)[k]=v});
+  const tog=(set,id,b)=>{set.has(id)?set.delete(id):set.add(id);b.classList.toggle("on")};
+  m.querySelectorAll("[data-tgp]").forEach(b=>b.onclick=()=>tog(D.gP,+b.dataset.tgp,b));
+  m.querySelectorAll("[data-tge]").forEach(b=>b.onclick=()=>tog(D.gE,+b.dataset.tge,b));
+  m.querySelectorAll("[data-twp]").forEach(b=>b.onclick=()=>tog(D.wP,+b.dataset.twp,b));
+  m.querySelector("[data-tsend]").onclick=()=>sendTrade(code)})}
+function sendTrade(code){const r=frRow(code),D=tdraft;if(!r||!D)return;
+ const gI={};for(const k in D.gI)if(D.gI[k]>0)gI[k]=Math.min(D.gI[k],have(k));const wI={};for(const k in D.wI)if(D.wI[k]>0)wI[k]=D.wI[k];
+ const pets=S.pets.filter(p=>D.gP.has(p.id)&&p.exp==null),gear=(S.gear||[]).filter(g=>D.gE.has(g.id));
+ const give={gold:Math.min(D.gG||0,Math.floor(S.gold)),items:gI,pets:pets.map(petPack),gear:gear.map(gearPack)};
+ const want={gold:D.wG||0,items:wI,pets:[...D.wP]};
+ if(tradeEmpty(give)&&tradeEmpty({...want,pets:want.pets}))return toast("주고받을 것을 골라 주세요");
+ if(Object.keys(S.tout||{}).length>=10)return toast("보낸 제안은 10개까지예요. 기다리거나 취소해 주세요");
+ // 맡기기: 내 것에서 빼 두기
+ S.gold-=give.gold;for(const k in gI)S.items[k]-=gI[k];
+ const ids=new Set(pets.map(p=>p.id));S.pets=S.pets.filter(p=>!ids.has(p.id));S.team=S.team.filter(id=>!ids.has(id));(S.gear||[]).forEach(g=>{if(ids.has(g.on))g.on=null});
+ const gids=new Set(gear.map(g=>g.id));S.gear=S.gear.filter(g=>!gids.has(g.id));
+ const id=myCode()+"-"+Date.now().toString(36);S.tout=S.tout||{};
+ S.tout[id]={to:code,toUid:r.id,toName:String(rankNames[r.id]||r.name||"친구").slice(0,12),fromName:myName(),give,want,at:now()};
+ tdraft=null;markDirty();writeTrade();closeModal();render();sfx("coin");toast("🤝 거래 제안을 보냈어요. 친구가 수락하면 자동으로 받아요")}
+function acceptTrade(id){const t=incomingTrades().find(x=>x.id===id);if(!t)return;const o=t.o,w=o.want||{};
+ if(S.gold<(w.gold||0))return toast("골드가 부족해요");for(const k in w.items||{})if(have(k)<w.items[k])return toast(`${ITEMS[k][0]}이(가) 부족해요`);
+ const wp=(w.pets||[]).map(pid=>S.pets.find(p=>p.id===pid));if(wp.some(p=>!p))return toast("요청받은 펫이 이제 없어서 수락할 수 없어요. 거절해 주세요");if(wp.some(p=>p.exp!=null))return toast("요청받은 펫이 원정 중이에요. 돌아온 뒤 수락해 주세요");
+ if(S.pets.length-wp.length+(o.give.pets||[]).length>maxPets())return toast("펫 자리가 부족해요");
+ S.gold-=w.gold||0;for(const k in w.items||{})S.items[k]-=w.items[k];const ids=new Set(wp.map(p=>p.id));S.pets=S.pets.filter(p=>!ids.has(p.id));S.team=S.team.filter(i=>!ids.has(i));(S.gear||[]).forEach(g=>{if(ids.has(g.on))g.on=null});
+ tradeGive(o.give);S.stats.trades=(S.stats.trades||0)+1;S.tresp=S.tresp||{};S.tresp[id]={s:"ok",from:t.from.id,pets:wp.map(petPack)};
+ markDirty();writeTrade();render();showRewards("거래 성공!",{},`받은 것: ${esc(tradeText(o.give))}`)}
+function declineTrade(id){const t=incomingTrades().find(x=>x.id===id);if(!t)return;S.tresp=S.tresp||{};S.tresp[id]={s:"no",from:t.from.id};markDirty();writeTrade();render();toast("거래를 거절했어요")}
+function cancelTrade(id){const o=(S.tout||{})[id];if(!o)return;const row=(tradeRows||[]).find(r=>r.id===o.toUid);if(row&&row.resp&&row.resp[id])return processTrades();
+ delete S.tout[id];tradeGive(o.give);markDirty();writeTrade();render();toast("제안을 취소하고 보낸 것을 돌려받았어요")}
 
 /* ================= 행동 ================= */
 function hatch(eggId){
@@ -1775,6 +1862,10 @@ document.addEventListener("click",e=>{
  if(t.hasAttribute("data-moonfuse")){sfx("fuse");const me=S.eggs.filter(x=>x.egg==="moon");if(me.length<5)return;const used=new Set(me.slice(0,5));S.eggs=S.eggs.filter(x=>!used.has(x));S.eggs.push({id:S.nextId++,egg:"moonfull"});markDirty();render();
   return openModal(`<div class="stage-bg moonfx" style="height:220px"><div class="eggshape egg-moonfull wobble" style="width:104px;height:130px"></div></div><p class="bigtitle">🌕 월광 알 완성!</p><p class="sub" style="text-align:center">달밤 알 5개가 하나로 합쳐졌어요.<br>이 알에서는 <b>월광 늑대</b>가 반드시 태어나요. 좋은 부화 기계로 까 보세요!</p><div class="row" style="justify-content:center;margin-top:12px"><button class="btn lg" data-ok>확인</button></div>`,m=>m.querySelector("[data-ok]").onclick=closeModal)}
  if(t.hasAttribute("data-tauto")){S.team=bestTeam(towerEl(S.tower.best+1));markDirty();render();return toast("이 층에 가장 강한 3마리로 편성했어요")}
+ if(d.ftrade)return tradeModal(d.ftrade);
+ if(d.tacc)return acceptTrade(d.tacc);
+ if(d.tdec)return declineTrade(d.tdec);
+ if(d.tcan)return cancelTrade(d.tcan);
  if(t.hasAttribute("data-fcopy")){const c=myCode();try{navigator.clipboard.writeText(c)}catch(e){}return toast(`친구 코드 ${c} 복사했어요`)}
  if(t.hasAttribute("data-fadd")){const c=($("#fIn")?.value||"").trim().toUpperCase().replace(/[^A-Z0-9]/g,"");if(c.length<4)return toast("친구 코드를 확인해 주세요");if(c===myCode())return toast("내 코드예요");if(S.friends.includes(c))return toast("이미 추가한 친구예요");if(S.friends.length>=FR_MAX)return toast(`친구는 ${FR_MAX}명까지예요`);S.friends.push(c);markDirty();render();const r=frRow(c);return toast(r?`${rankNames[r.id]||r.name||"친구"}를 친구로 추가했어요`:"추가했어요. 친구를 찾는 중이에요")}
  if(d.fdel){S.friends=S.friends.filter(x=>x!==d.fdel);markDirty();return render()}
@@ -1868,6 +1959,7 @@ boot(loadLocal());
   if(snap.exists){const d=snap.data();if(d&&d.json&&(d.savedAt||0)>(S.savedAt||0)){try{S=migrate(JSON.parse(d.json));advance(now());render();toast("저장된 기록을 불러왔어요");offlineModal()}catch(e){}}}
   dirty=true;await flush();
   db.collection("arena").onSnapshot(q=>{arenaRows=q.docs.map(x=>({id:x.id,...x.data()}));arenaRows.forEach(r=>{if(r.name)rankNames[r.id]=r.name});if(tab==="battle"&&bmode==="arena"&&!$("#modalRoot").innerHTML)render()},e=>console.warn(e));
+  db.collection("trade").onSnapshot(q=>{tradeRows=q.docs.map(x=>({id:x.id,...x.data()}));try{processTrades()}catch(e){console.warn(e)}if(tab==="rec"&&recTab==="friend"&&!$("#modalRoot").innerHTML)render()},()=>{});
   db.collection("friends").onSnapshot(q=>{friendRows=q.docs.map(x=>({id:x.id,...x.data()}));if(tab==="rec"&&recTab==="friend"&&!$("#modalRoot").innerHTML)render()},()=>{});
   db.collection("worldboss").onSnapshot(q=>{wbRows=q.docs.map(x=>({id:x.id,...x.data()}));wbRows.forEach(r=>{if(r.name&&!rankNames[r.id])rankNames[r.id]=r.name});if((tab==="event"||tab==="home")&&!$("#modalRoot").innerHTML&&!fighting)render()},()=>{});
   db.collection("ranks").onSnapshot(q=>{rankRows=q.docs.map(x=>({id:x.id,...x.data()}));rankRows.forEach(r=>{if(r.name)rankNames[r.id]=r.name});const b=$("#rankBox");if(b)b.innerHTML=rankTable()},e=>console.warn(e));
